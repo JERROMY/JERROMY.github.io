@@ -1,0 +1,85 @@
+/* ============================================================
+   no.X / MiraMeta — Color tokens
+   "深黑、墨藍、深灰紫" voids + silver wireframe + restrained
+   rose / lime / gold / matte-violet light points.
+   Refined, mysterious, futuristic — NOT high-saturation tech blue.
+   ============================================================ */
+:root {
+  /* --- Base voids (backgrounds) --- */
+  --nx-void:        #07070C;  /* deepest black, page base */
+  --nx-ink:         #0A0E1A;  /* 墨藍 ink blue */
+  --nx-abyss:       #0E0B16;  /* 深灰紫 violet-black */
+  --nx-surface-1:   #111119;  /* raised surface */
+  --nx-surface-2:   #181826;  /* card surface */
+  --nx-surface-3:   #20202F;  /* elevated / hover surface */
+
+  /* --- Silver / neutral ink (foreground on dark) --- */
+  --nx-white:       #FFFFFF;
+  --nx-silver:      #F4F6FB;  /* primary text / wireframe white */
+  --nx-mist:        #AEB4C7;  /* secondary text */
+  --nx-mute:        #6B7186;  /* tertiary / captions */
+  --nx-faint:       #444A5C;  /* disabled / placeholder */
+
+  /* --- Hairlines / wireframe strokes --- */
+  --nx-line-faint:  rgba(244, 246, 251, 0.07);
+  --nx-line:        rgba(244, 246, 251, 0.13);
+  --nx-line-strong: rgba(244, 246, 251, 0.26);
+
+  /* --- Accent light points (restrained, used sparingly) --- */
+  --nx-rose:        #F4A6C8;  /* pale pink — the signature flow */
+  --nx-rose-bright: #FF8CC0;
+  --nx-rose-deep:   #C85B92;
+  --nx-lime:        #C8F250;  /* fluorescent green HUD signal */
+  --nx-lime-deep:   #9BC72E;
+  --nx-gold:        #E9C684;  /* gold light point */
+  --nx-violet:      #8E7BC4;  /* matte violet haze */
+  --nx-violet-deep: #5B4A8C;
+
+  /* --- Glow alphas (for shadows / auras) --- */
+  --nx-rose-glow:   rgba(255, 140, 192, 0.30);
+  --nx-lime-glow:   rgba(200, 242, 80, 0.28);
+  --nx-violet-glow: rgba(142, 123, 196, 0.30);
+
+  /* --- Deck / presentation register (vivid violet→magenta) --- */
+  --nx-deck-ink:    #0E1430;  /* deck cool corner */
+  --nx-deck-violet: #2A1A4A;
+  --nx-deck-magenta:#6E2B6E;
+  --nx-deck-grad:   linear-gradient(120deg, #0E1430 0%, #2A1A4A 45%, #6E2B6E 100%); /* @kind color */
+
+  /* --- Semantic status --- */
+  --nx-success:     #C8F250;  /* lime doubles as success/online */
+  --nx-warning:     #E9C684;
+  --nx-danger:      #FF6B7D;
+  --nx-info:        #8EB6F0;
+
+  /* ============================================================
+     Semantic aliases — reach for these in components
+     ============================================================ */
+  --bg-page:        var(--nx-void);
+  --bg-ink:         var(--nx-ink);
+  --bg-abyss:       var(--nx-abyss);
+  --surface-card:   var(--nx-surface-2);
+  --surface-raised: var(--nx-surface-1);
+  --surface-hover:  var(--nx-surface-3);
+
+  --text-strong:    var(--nx-silver);
+  --text-body:      var(--nx-mist);
+  --text-muted:     var(--nx-mute);
+  --text-disabled:  var(--nx-faint);
+  --text-on-accent: var(--nx-void);
+
+  --border-faint:   var(--nx-line-faint);
+  --border-default: var(--nx-line);
+  --border-strong:  var(--nx-line-strong);
+
+  --accent-primary: var(--nx-rose);
+  --accent-signal:  var(--nx-lime);
+  --accent-warm:    var(--nx-gold);
+  --accent-haze:    var(--nx-violet);
+
+  --focus-ring:     var(--nx-rose-bright);
+
+  /* Iridescent brand sweep — outline text, dividers, hero strokes */
+  --nx-iridescent:  linear-gradient(90deg, #F4A6C8 0%, #8E7BC4 34%, #8EB6F0 60%, #C8F250 100%); /* @kind color */
+  --nx-aurora:      radial-gradient(120% 120% at 70% 20%, rgba(142,123,196,0.22) 0%, rgba(200,242,80,0.05) 40%, rgba(7,7,12,0) 70%); /* @kind color */
+}

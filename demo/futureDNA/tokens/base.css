@@ -1,0 +1,94 @@
+/* ============================================================
+   no.X / MiraMeta — Base layer + brand effect helpers
+   (rules live here; styles.css stays @import-only)
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background-color: var(--bg-page);
+  background-image: var(--nx-aurora);
+  background-attachment: fixed;
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-display);
+  color: var(--text-strong);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--ls-tight);
+  margin: 0;
+}
+
+p { margin: 0; text-wrap: pretty; }
+a { color: var(--accent-primary); text-decoration: none; }
+
+::selection { background: var(--nx-rose); color: var(--nx-void); }
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* --- HUD / technical eyebrow label --- */
+.nx-hud {
+  font-family: var(--font-mono);
+  font-size: var(--fs-hud);
+  letter-spacing: var(--ls-hud);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.nx-hud--signal { color: var(--accent-signal); }
+
+/* --- Iridescent / aurora gradient text --- */
+.nx-iridescent {
+  background: var(--nx-iridescent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+/* Outline iridescent (like the hero "PRODUCTS") */
+.nx-outline {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--nx-violet);
+  background: var(--nx-iridescent);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* --- Wireframe grid backdrop --- */
+.nx-grid-bg {
+  background-image:
+    linear-gradient(var(--nx-line-faint) 1px, transparent 1px),
+    linear-gradient(90deg, var(--nx-line-faint) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+/* --- Frosted HUD panel --- */
+.nx-frost {
+  background: rgba(18, 18, 28, 0.55);
+  backdrop-filter: blur(var(--blur-md));
+  -webkit-backdrop-filter: blur(var(--blur-md));
+  border: var(--bw-hair) solid var(--border-default);
+}
+
+/* --- Corner-ticked technical frame --- */
+.nx-frame { position: relative; border: var(--bw-hair) solid var(--border-default); }
+.nx-frame::before, .nx-frame::after {
+  content: ""; position: absolute; width: 10px; height: 10px;
+  border-color: var(--accent-signal); border-style: solid; border-width: 0;
+}
+.nx-frame::before { top: -1px; left: -1px; border-top-width: 1.5px; border-left-width: 1.5px; }
+.nx-frame::after  { bottom: -1px; right: -1px; border-bottom-width: 1.5px; border-right-width: 1.5px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .nx-drift { animation: nx-drift var(--dur-drift) var(--ease-drift) infinite alternate; }
+}
+@keyframes nx-drift { from { transform: translateY(0); } to { transform: translateY(-6px); } }

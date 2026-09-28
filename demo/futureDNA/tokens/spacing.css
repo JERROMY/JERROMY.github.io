@@ -1,0 +1,67 @@
+/* ============================================================
+   no.X / MiraMeta — Spacing, radius, shadow, motion, layout
+   ============================================================ */
+:root {
+  /* --- Spacing scale (4px base) --- */
+  --sp-0:    0; /* @kind spacing */
+  --sp-1:    0.25rem;  /* 4  */
+  --sp-2:    0.5rem;   /* 8  */
+  --sp-3:    0.75rem;  /* 12 */
+  --sp-4:    1rem;     /* 16 */
+  --sp-5:    1.5rem;   /* 24 */
+  --sp-6:    2rem;     /* 32 */
+  --sp-7:    3rem;     /* 48 */
+  --sp-8:    4rem;     /* 64 */
+  --sp-9:    6rem;     /* 96 */
+  --sp-10:   8rem;     /* 128 */
+
+  /* --- Radius — sharp, technical; cards round, controls subtle --- */
+  --radius-none:  0;
+  --radius-xs:    2px;
+  --radius-sm:    4px;
+  --radius-md:    8px;
+  --radius-lg:    14px;
+  --radius-xl:    22px;
+  --radius-2xl:   32px;
+  --radius-pill:  999px;
+
+  /* --- Borders --- */
+  --bw-hair:   1px;
+  --bw-thin:   1.5px;
+  --bw-thick:  2px;
+
+  /* --- Shadows & glows (dark-first; depth via glow, not drop) --- */
+  --shadow-sm:   0 1px 2px rgba(0,0,0,0.5);
+  --shadow-md:   0 8px 24px rgba(0,0,0,0.45);
+  --shadow-lg:   0 24px 64px rgba(0,0,0,0.55);
+  --shadow-card: 0 18px 50px -20px rgba(0,0,0,0.8);
+  --glow-rose:   0 0 0 1px rgba(255,140,192,0.35), 0 0 28px -4px var(--nx-rose-glow);
+  --glow-lime:   0 0 0 1px rgba(200,242,80,0.4), 0 0 24px -4px var(--nx-lime-glow);
+  --glow-violet: 0 0 40px -8px var(--nx-violet-glow);
+  --glow-soft:   0 0 60px -12px rgba(142,123,196,0.25);
+
+  /* --- Blur (frosted HUD panels) --- */
+  --blur-sm:  6px;
+  --blur-md:  14px;
+  --blur-lg:  28px;
+
+  /* --- Motion --- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1); /* @kind other */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1); /* @kind other */
+  --ease-drift:  cubic-bezier(0.4, 0.0, 0.2, 1); /* @kind other */
+  --dur-fast:    140ms; /* @kind other */
+  --dur-base:    240ms; /* @kind other */
+  --dur-slow:    420ms; /* @kind other */
+  --dur-drift:   1200ms; /* @kind other */
+
+  /* --- Layout --- */
+  --container:   1240px; /* @kind other */
+  --container-wide: 1440px; /* @kind other */
+  --gutter:      clamp(1.25rem, 4vw, 4rem); /* @kind other */
+  --header-h:    72px; /* @kind other */
+  --z-base: 1; /* @kind other */
+  --z-raised: 10; /* @kind other */
+  --z-overlay: 100; /* @kind other */
+  --z-modal: 1000; /* @kind other */
+  --z-toast: 2000; /* @kind other */
+}
