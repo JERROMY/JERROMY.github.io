@@ -18,8 +18,9 @@ body {
 }
 
 /* 固定舞台，整體縮放 */
+/* position:fixed —— 用 absolute 的話，手機瀏覽器會先被 1280px 的舞台撐寬版面（innerWidth 變大），縮放後畫面仍被切掉 */
 .stage {
-  position: absolute; top: 50%; left: 50%;
+  position: fixed; top: 50%; left: 50%;
   width: 1280px; height: 720px;
   transform: translate(-50%, -50%) scale(1);
   transform-origin: center center;
@@ -215,6 +216,13 @@ body {
 .deckbar > * { flex-shrink: 0; }
 @media (max-width: 820px){ .deckbar .dots { display: none; } }
 @media (max-width: 400px){ .deckbar { gap: 12px; } .deckbar .name { display: none; } }
+/* 手機直式：工具列連結較多（PDF／PPT／子頁），縮間距與字級，避免工具列比螢幕寬、把整頁撐寬導致畫面被切 */
+@media (max-width: 600px){
+  .deckbar { gap: 6px; padding: 6px 10px; font-size: 10px; bottom: 14px; letter-spacing: 0.04em; }
+  .deckbar .sep { display: none; }
+  .deckbar .dbhome { padding: 2px 4px; }
+  .deckbar button { padding: 2px 3px; }
+}
 
 /* ============================================================
    共用補充元件（flag／note2）
