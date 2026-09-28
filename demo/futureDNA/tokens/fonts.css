@@ -1,0 +1,12 @@
+/* ============================================================
+   no.X / MiraMeta — Webfonts
+   SUBSTITUTION NOTE: no brand font binaries were supplied.
+   These are the closest Google Fonts matches and SHOULD BE
+   REPLACED if no.X has licensed brand fonts:
+     • Space Grotesk  → techy geometric display / headings
+     • Archivo Black  → the no.X brand wordmark (heavy round black)
+     • Hanken Grotesk → neutral UI + body
+     • Space Mono     → HUD / technical / code labels
+     • Noto Sans TC   → Traditional Chinese (matches live site)
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Hanken+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Archivo+Black&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');

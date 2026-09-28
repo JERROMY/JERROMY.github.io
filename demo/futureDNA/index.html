@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>FutureDNA · 簽名端</title>
+<link rel="stylesheet" href="tokens/fonts.css" />
+<link rel="stylesheet" href="tokens/typography.css" />
+<style>
+  :root{ --paper:#E8E8E5; --white:#FFFFFF; --ink:#1B1B1D; --ink2:#4A4A4F; --ink3:#8A8A90; --line:#C2C2C7; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--font-sans); }
+  .wrap { max-width:1040px; margin:0 auto; padding:56px 24px 64px; }
+  .eyebrow { font-family:var(--font-mono); font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink3); }
+  h1 { font-weight:500; font-size:40px; line-height:1.15; margin:12px 0 0; }
+  .lead { font-size:15px; color:var(--ink2); line-height:1.6; margin:12px 0 0; max-width:640px; }
+  .grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:20px; margin-top:36px; }
+  .card { display:block; background:var(--white); border:1px solid var(--line); border-radius:12px; overflow:hidden;
+    color:inherit; text-decoration:none; transition:border-color .2s, transform .2s; }
+  .card:hover { border-color:var(--ink); transform:translateY(-2px); }
+  .card img { display:block; width:100%; aspect-ratio:16/9; object-fit:cover; border-bottom:1px solid var(--line); }
+  .card .body { padding:16px 18px 18px; }
+  .card .no { font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.18em; color:var(--ink3); }
+  .card h2 { font-size:20px; font-weight:500; margin:6px 0 0; }
+  .card p { font-size:13.5px; color:var(--ink2); line-height:1.6; margin:6px 0 0; }
+  .card .go { display:inline-block; margin-top:12px; font-size:13px; border-bottom:1px solid var(--ink); }
+  .foot { margin-top:28px; font-size:13px; color:var(--ink2); }
+  .foot a { color:var(--ink); }
+  @media (max-width:720px) { .grid { grid-template-columns:1fr; } h1 { font-size:32px; } .wrap { padding:40px 16px 48px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">FUTURE DNA · SIGN KIOSK</div>
+  <h1>FutureDNA 簽名端</h1>
+  <p class="lead">觀眾在 33 吋直立觸控螢幕上選顏色、在球上簽名，送出後簽名球飛到牆面投影。這裡是簽名端的兩份設計稿。</p>
+
+  <div class="grid">
+    <a class="card" href="sign-ui/">
+      <img src="assets/sign-ui.jpg" alt="簽名介面線稿" />
+      <div class="body">
+        <div class="no">01 · SIGN UI</div>
+        <h2>簽名介面</h2>
+        <p>可以直接操作的線稿：在 3D 球上簽名、預覽旋轉、送出飛出、等待中。手機直立開啟會切成全螢幕。</p>
+        <span class="go">開啟互動線稿 →</span>
+      </div>
+    </a>
+    <a class="card" href="sign-device/">
+      <img src="assets/sign-device.jpg" alt="簽名裝置示意" />
+      <div class="body">
+        <div class="no">02 · SIGN DEVICE</div>
+        <h2>簽名裝置示意</h2>
+        <p>33 吋直立觸控螢幕與機櫃的正視、側視示意，含高度與站位建議。</p>
+        <span class="go">開啟示意圖 →</span>
+      </div>
+    </a>
+  </div>
+
+  <p class="foot">兩份合併成一份 PDF：<a href="簽名端示意與線稿.pdf" download>簽名端示意與線稿.pdf ↓</a></p>
+</div>
+</body>
+</html>

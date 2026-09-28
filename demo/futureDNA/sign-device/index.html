@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>FutureDNA · 簽名站示意</title>
+<link rel="stylesheet" href="../tokens/fonts.css" />
+<link rel="stylesheet" href="../tokens/typography.css" />
+<style>
+  /* 與簽名介面線稿同一套灰階 */
+  :root{ --paper:#E8E8E5; --white:#FFFFFF; --ink:#1B1B1D; --ink2:#4A4A4F; --ink3:#8A8A90; --line:#C2C2C7; --body:#D0D0D3; }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { background:var(--paper); overflow:hidden; font-family:var(--font-sans); color:var(--ink); }
+  .stage { position:absolute; top:50%; left:50%; width:1280px; height:720px; transform:translate(-50%,-50%) scale(1); transform-origin:center center; }
+  .eyebrow { font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink3); }
+  .head { position:absolute; left:44px; top:36px; }
+  h1 { font-weight:500; font-size:34px; line-height:1.15; margin:12px 0 0; }
+  .lead { font-size:13px; color:var(--ink2); margin:8px 0 0; }
+  svg.draw { position:absolute; inset:0; width:1280px; height:720px; }
+  svg text { font-family:var(--font-sans); fill:var(--ink); }
+  svg .mono { font-family:var(--font-mono); }
+  .notes { position:absolute; left:1010px; top:36px; width:228px; }
+  .notes dl { margin:12px 0 0; }
+  .notes dt { font-size:13px; font-weight:500; margin-top:12px; }
+  .notes dt span { font-family:var(--font-mono); font-size:9.5px; font-weight:400; letter-spacing:0.14em; color:var(--ink3); margin-left:6px; }
+  .notes dd { font-size:11.5px; line-height:1.55; color:var(--ink2); margin:3px 0 0; }
+  .navlink { display:inline-block; margin-top:18px; font-size:12.5px; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--ink); padding-bottom:1px; }
+  .navlink:hover { color:var(--ink2); }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="head">
+    <div class="eyebrow"><a href="../" style="color:inherit;text-decoration:none">← FUTURE DNA</a> · SIGN KIOSK</div>
+    <h1>簽名站示意</h1>
+    <p class="lead">33 吋直立觸控螢幕，觀眾站在螢幕前，直接在畫面中央的球上簽名。</p>
+  </div>
+
+  <svg class="draw" viewBox="0 0 1280 720" aria-label="簽名站正視與側視示意">
+    <defs>
+      <marker id="tk" viewBox="-4 -4 8 8" markerWidth="8" markerHeight="8" orient="auto"><path d="M-3 3 L3 -3" stroke="#1B1B1D" stroke-width="1.1"/></marker>
+    </defs>
+
+    <!-- ================= 正視 FRONT（比例 2.6 px = 1 cm，地面 y=650） ================= -->
+    <line x1="60" y1="650" x2="560" y2="650" stroke="#1B1B1D" stroke-width="1.4"/>
+    <!-- 機櫃 -->
+    <rect x="222" y="634.4" width="156" height="15.6" rx="2" fill="#BDBDC1" stroke="#1B1B1D" stroke-width="1.2"/>
+    <rect x="232.4" y="182" width="135.2" height="452.4" rx="5" fill="#D0D0D3" stroke="#1B1B1D" stroke-width="1.4"/>
+    <text x="300" y="215" text-anchor="middle" font-size="8.5" class="mono" letter-spacing="1.2" fill="#4A4A4F">簽名區 · SIGN HERE</text>
+    <!-- 螢幕 41×73 cm，下緣 85 cm -->
+    <rect x="246.6" y="239.2" width="106.9" height="189.8" rx="1.5" fill="#FAFAF9" stroke="#1B1B1D" stroke-width="1.4"/>
+    <!-- 螢幕內容：簽名介面縮圖（1080×1920 × 0.099） -->
+    <line x1="253.7" y1="247.1" x2="346.4" y2="247.1" stroke="#C2C2C7" stroke-width="0.6"/>
+    <text x="300" y="258.2" text-anchor="middle" font-size="7.4" font-weight="500">點亮未來的 DNA</text>
+    <rect x="276" y="266.8" width="48" height="2.2" rx="1" fill="#C2C2C7"/>
+    <circle cx="300" cy="321.4" r="40.6" fill="#B9B9BE" stroke="#1B1B1D" stroke-width="1"/>
+    <circle cx="300" cy="321.4" r="30.4" fill="none" stroke="#FFFFFF" stroke-width="0.8" stroke-dasharray="2 2"/>
+    <path d="M281 322 q4.5 -10 9 0 t9 0 t9 0 t9 0" fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
+    <g fill="#9C9CA1">
+      <circle cx="259.1" cy="380.3" r="4.4"/><circle cx="270.8" cy="380.3" r="4.4"/><circle cx="282.5" cy="380.3" r="4.4"/><circle cx="294.2" cy="380.3" r="4.4"/>
+      <circle cx="305.9" cy="380.3" r="4.4"/><circle cx="317.6" cy="380.3" r="4.4"/><circle cx="329.3" cy="380.3" r="4.4"/><circle cx="341" cy="380.3" r="4.4"/>
+    </g>
+    <g fill="#FFFFFF" stroke="#C2C2C7" stroke-width="0.5">
+      <rect x="254.5" y="393.2" width="11.9" height="10.9" rx="1.5"/><rect x="267.8" y="393.2" width="11.9" height="10.9" rx="1.5"/><rect x="281.1" y="393.2" width="11.9" height="10.9" rx="1.5"/>
+      <rect x="303.5" y="393.2" width="14.8" height="10.9" rx="1.5"/><rect x="319.7" y="393.2" width="14.8" height="10.9" rx="1.5"/><rect x="335.9" y="393.2" width="10.6" height="10.9" rx="1.5"/>
+    </g>
+    <rect x="254.5" y="409.1" width="35.6" height="13.5" rx="6.7" fill="#FFFFFF" stroke="#1B1B1D" stroke-width="0.6"/>
+    <rect x="294.1" y="409.1" width="52.3" height="13.5" rx="6.7" fill="#1B1B1D"/>
+    <!-- 螢幕寬 -->
+    <line x1="246.6" y1="442" x2="353.5" y2="442" stroke="#4A4A4F" stroke-width="0.8" marker-start="url(#tk)" marker-end="url(#tk)"/>
+    <text x="300" y="455" text-anchor="middle" font-size="9.5" class="mono" fill="#4A4A4F">41 cm</text>
+    <!-- 主機艙 -->
+    <rect x="262" y="472" width="76" height="112" rx="3" fill="none" stroke="#8A8A90" stroke-width="0.9" stroke-dasharray="4 3"/>
+    <text x="300" y="524" text-anchor="middle" font-size="10" fill="#4A4A4F">主機艙</text>
+    <text x="300" y="538" text-anchor="middle" font-size="8.5" class="mono" fill="#8A8A90">mini PC</text>
+    <g stroke="#8A8A90" stroke-width="1"><line x1="275" y1="604" x2="325" y2="604"/><line x1="275" y1="610" x2="325" y2="610"/><line x1="275" y1="616" x2="325" y2="616"/></g>
+
+    <!-- 人（背影，165 cm），站在螢幕左前方、右手伸向球心 -->
+    <g transform="translate(183 650) scale(2.6 -2.6)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <g stroke="#1B1B1D">
+        <path d="M-8.5 84 L-8.5 50" stroke-width="15.8"/><path d="M8.5 84 L8.5 50" stroke-width="15.8"/><path d="M-8.8 50 L-9 6" stroke-width="11.8"/><path d="M8.8 50 L9 6" stroke-width="11.8"/>
+        <path d="M-8 88 L8 88" stroke-width="20.8"/>
+        <path d="M-21 131 L-24 108 L-23 86" stroke-width="8.3"/>
+        <path d="M19 131 L32 123 L44 126" stroke-width="8.3"/><path d="M44 126 L46.6 126.6" stroke-width="3.8"/>
+        <polygon points="-14,129 14,129 11,104 12,93 -12,93 -11,104" fill="#1B1B1D" stroke-width="10.8"/>
+        <path d="M0 143 L0 134" stroke-width="9.8"/>
+        <circle cx="0" cy="153" r="10.4" fill="#1B1B1D" stroke="none"/>
+      </g>
+      <g stroke="#FFFFFF">
+        <path d="M-8.5 84 L-8.5 50" stroke-width="15"/><path d="M8.5 84 L8.5 50" stroke-width="15"/><path d="M-8.8 50 L-9 6" stroke-width="11"/><path d="M8.8 50 L9 6" stroke-width="11"/>
+        <path d="M-8 88 L8 88" stroke-width="20"/>
+        <path d="M-21 131 L-24 108 L-23 86" stroke-width="7.5"/>
+        <path d="M19 131 L32 123 L44 126" stroke-width="7.5"/><path d="M44 126 L46.6 126.6" stroke-width="3"/>
+        <polygon points="-14,129 14,129 11,104 12,93 -12,93 -11,104" fill="#FFFFFF" stroke-width="10"/>
+        <path d="M0 143 L0 134" stroke-width="9"/>
+        <circle cx="0" cy="153" r="10" fill="#BDBDC2" stroke="none"/>
+      </g>
+    </g>
+
+    <!-- 標註 -->
+    <g stroke="#4A4A4F" stroke-width="0.8" fill="none">
+      <path d="M362 212 H392"/><path d="M353.5 290 H392"/><path d="M338 528 H392"/><path d="M378 642 H392"/>
+    </g>
+    <g fill="#1B1B1D"><circle cx="362" cy="212" r="2"/><circle cx="353.5" cy="290" r="2"/><circle cx="338" cy="528" r="2"/><circle cx="378" cy="642" r="2"/></g>
+    <g font-size="11.5" font-weight="500">
+      <text x="398" y="211">簽名區標示</text><text x="398" y="289">33 吋觸控螢幕</text>
+      <text x="398" y="527">主機艙</text><text x="398" y="641">底座配重</text>
+    </g>
+    <g font-size="9" class="mono" fill="#8A8A90">
+      <text x="398" y="223">SIGN HERE</text><text x="398" y="301">直立 9:16 · 1080×1920</text>
+      <text x="398" y="539">mini PC · 有線網路</text><text x="398" y="653">防傾倒</text>
+    </g>
+    <text x="290" y="700" text-anchor="middle" font-size="12" font-weight="500">正視 <tspan class="mono" font-size="9.5" font-weight="400" fill="#8A8A90" letter-spacing="1.5">FRONT</tspan></text>
+
+    <!-- ================= 側視 SIDE（螢幕面 x=780） ================= -->
+    <line x1="600" y1="650" x2="900" y2="650" stroke="#1B1B1D" stroke-width="1.4"/>
+    <rect x="730.6" y="634.4" width="130" height="15.6" rx="2" fill="#BDBDC1" stroke="#1B1B1D" stroke-width="1.2"/>
+    <rect x="780" y="182" width="31.2" height="452.4" rx="4" fill="#D0D0D3" stroke="#1B1B1D" stroke-width="1.4"/>
+    <rect x="778" y="239.2" width="4.5" height="189.8" fill="#1B1B1D"/>
+    <rect x="787" y="472" width="17" height="112" rx="2" fill="none" stroke="#8A8A90" stroke-width="0.9" stroke-dasharray="4 3"/>
+
+    <!-- 人（側面，面向螢幕） -->
+    <g transform="translate(655.2 650) scale(2.6 -2.6)" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <g stroke="#1B1B1D">
+        <path d="M-2.5 84 L-3.5 44 L-4.5 6" stroke-width="11.8"/><path d="M2.5 84 L3.5 44 L5 6" stroke-width="11.8"/>
+        <path d="M-8 3 L14 2.6" stroke-width="6.8"/>
+        <polygon points="-7,128 5,128 7,117 4,103 5,93 -6,93 -7,110" fill="#1B1B1D" stroke-width="10.8"/>
+        <path d="M1 143 L1 134" stroke-width="9.8"/>
+        <path d="M12 152.5 L13.8 149.8" stroke-width="3.6"/>
+        <circle cx="3" cy="153" r="10.4" fill="#1B1B1D" stroke="none"/>
+      </g>
+      <g stroke="#FFFFFF">
+        <path d="M-2.5 84 L-3.5 44 L-4.5 6" stroke-width="11"/><path d="M2.5 84 L3.5 44 L5 6" stroke-width="11"/>
+        <path d="M-8 3 L14 2.6" stroke-width="6"/>
+        <polygon points="-7,128 5,128 7,117 4,103 5,93 -6,93 -7,110" fill="#FFFFFF" stroke-width="10"/>
+        <path d="M1 143 L1 134" stroke-width="9"/>
+        <path d="M12 152.5 L13.8 149.8" stroke-width="2.8"/>
+        <circle cx="3" cy="153" r="10" fill="#FFFFFF" stroke="none"/>
+        <path d="M3 163 A10 10 0 0 0 3 143 Q-1 150 3 163 Z" fill="#BDBDC2" stroke="none"/>
+      </g>
+      <!-- 伸出的手臂（畫在身體前面） -->
+      <g stroke="#1B1B1D"><path d="M0 131 L22 120 L44 126" stroke-width="8.3"/><path d="M44 126 L48 126.4" stroke-width="3.8"/></g>
+      <g stroke="#FFFFFF"><path d="M0 131 L22 120 L44 126" stroke-width="7.5"/><path d="M44 126 L48 126.4" stroke-width="3"/></g>
+    </g>
+
+    <!-- 高度標尺（cm） -->
+    <g stroke="#8A8A90" stroke-width="0.6">
+      <line x1="816" y1="182" x2="890" y2="182"/><line x1="816" y1="239.2" x2="890" y2="239.2"/>
+      <line x1="816" y1="429" x2="890" y2="429"/><line x1="866" y1="650" x2="890" y2="650"/>
+    </g>
+    <line x1="783" y1="321.4" x2="890" y2="321.4" stroke="#4A4A4F" stroke-width="0.8" stroke-dasharray="3 3"/>
+    <line x1="885" y1="182" x2="885" y2="650" stroke="#4A4A4F" stroke-width="0.8"/>
+    <g stroke="#1B1B1D" stroke-width="1.1">
+      <path d="M882 185 L888 179"/><path d="M882 242.2 L888 236.2"/><path d="M882 324.4 L888 318.4"/><path d="M882 432 L888 426"/><path d="M882 653 L888 647"/>
+    </g>
+    <g font-size="10">
+      <text x="893" y="185.5"><tspan class="mono">180</tspan> 機櫃頂</text>
+      <text x="893" y="242.7"><tspan class="mono">158</tspan> 螢幕上緣</text>
+      <text x="893" y="324.9" font-weight="500"><tspan class="mono">126</tspan> 球心</text>
+      <text x="893" y="432.5"><tspan class="mono">85</tspan> 螢幕下緣</text>
+      <text x="893" y="653.5"><tspan class="mono">0</tspan> 地面</text>
+    </g>
+    <text x="885" y="170" text-anchor="middle" font-size="8.5" class="mono" fill="#8A8A90" letter-spacing="1">單位 cm</text>
+    <!-- 站位 -->
+    <line x1="655.2" y1="668" x2="780" y2="668" stroke="#4A4A4F" stroke-width="0.8" marker-start="url(#tk)" marker-end="url(#tk)"/>
+    <line x1="655.2" y1="655" x2="655.2" y2="672" stroke="#8A8A90" stroke-width="0.6"/>
+    <line x1="780" y1="655" x2="780" y2="672" stroke="#8A8A90" stroke-width="0.6"/>
+    <text x="717.6" y="682" text-anchor="middle" font-size="9.5" fill="#4A4A4F">站位 約 45–50</text>
+    <text x="740" y="700" text-anchor="middle" font-size="12" font-weight="500">側視 <tspan class="mono" font-size="9.5" font-weight="400" fill="#8A8A90" letter-spacing="1.5">SIDE · 人形 165 cm</tspan></text>
+  </svg>
+
+  <div class="notes">
+    <div class="eyebrow">SPEC 規格（概要）</div>
+    <dl>
+      <dt>螢幕<span>DISPLAY</span></dt>
+      <dd>33 吋直立觸控，9:16，可視區約 41 × 73 cm。市面常見 32 吋（約 40 × 71 cm），採購時確認；建議電容式觸控，手寫較順。</dd>
+      <dt>高度（建議）<span>HEIGHT</span></dt>
+      <dd>螢幕下緣 85 cm、上緣 158 cm，球心約 126 cm：成人手臂往前伸就碰得到，小朋友也搆得到球的下半部。</dd>
+      <dt>站位<span>STANDING</span></dt>
+      <dd>觀眾站在螢幕前約 45–50 cm。前方留淨空，給排隊與旁觀的人。</dd>
+      <dt>機櫃<span>CABINET</span></dt>
+      <dd>直立機櫃或立架，內置 mini PC，有線網路接投影主機（MQTT）。</dd>
+      <dt>待確認<span>TBD</span></dt>
+      <dd>實際高度依現場動線與主要客群調整；螢幕是否需要微仰角。</dd>
+    </dl>
+    <a class="navlink" href="../sign-ui/">簽名介面線稿 →</a><a class="navlink" style="margin-left:16px" href="../簽名端示意與線稿.pdf" download aria-label="下載 PDF">PDF ↓</a>
+  </div>
+</div>
+<script>
+(function(){
+  var stage = document.getElementById("stage");
+  function fit(){ var s = Math.min(innerWidth/1280, innerHeight/720); stage.style.transform = "translate(-50%,-50%) scale(" + s + ")"; }
+  addEventListener("resize", fit); fit();
+  addEventListener("keydown", function(e){ if (e.key === "f" || e.key === "F") { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); } });
+})();
+</script>
+</body>
+</html>

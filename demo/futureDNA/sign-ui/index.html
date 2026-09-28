@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>FutureDNA · 簽名介面線稿</title>
+<link rel="stylesheet" href="../tokens/fonts.css" />
+<link rel="stylesheet" href="../tokens/typography.css" />
+<style>
+  /* 線稿用灰階：只有「球色」與色盤是彩色（那是要被選的內容本身） */
+  :root{
+    --paper:#E8E8E5; --screen:#FAFAF9; --white:#FFFFFF;
+    --ink:#1B1B1D; --ink2:#4A4A4F; --ink3:#8A8A90;
+    --line:#C2C2C7; --line2:#DCDCDF;
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { background:var(--paper); overflow:hidden; font-family:var(--font-sans); color:var(--ink); }
+  button { font-family:inherit; cursor:pointer; }
+
+  /* ---------- 文件頁：固定 1280×720 舞台（不跑版） ---------- */
+  .stage { position:absolute; top:50%; left:50%; width:1280px; height:720px;
+    transform:translate(-50%,-50%) scale(1); transform-origin:center center; }
+  .eyebrow { font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink3); }
+  .col { position:absolute; top:36px; width:372px; }
+  .col-l { left:44px; } .col-r { left:866px; width:370px; }
+  h1 { font-weight:500; font-size:34px; line-height:1.15; letter-spacing:0.01em; margin:12px 0 0; }
+  h1 small { display:block; font-family:var(--font-mono); font-weight:400; font-size:13px; letter-spacing:0.18em; color:var(--ink3); margin-top:8px; }
+  .lead { font-size:13px; color:var(--ink2); margin:12px 0 0; line-height:1.5; }
+  .hr { height:1px; background:var(--line); margin:18px 0 14px; }
+
+  .flow { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .flow li { display:flex; gap:12px; padding:10px 12px; border:1px solid var(--line); border-radius:8px; background:rgba(255,255,255,.35);
+    transition:background .25s, border-color .25s; }
+  .flow li b { font-family:var(--font-mono); font-size:11px; font-weight:400; color:var(--ink3); padding-top:2px; }
+  .flow h3 { font-size:14px; font-weight:500; margin:0; }
+  .flow h3 span { font-family:var(--font-mono); font-size:10px; font-weight:400; letter-spacing:0.16em; color:var(--ink3); margin-left:6px; }
+  .flow p { font-size:12px; line-height:1.5; color:var(--ink2); margin:3px 0 0; }
+  body[data-state="draw"] .flow li[data-s="draw"],
+  body[data-state="preview"] .flow li[data-s="preview"],
+  body[data-state="send"] .flow li[data-s="send"],
+  body[data-state="loading"] .flow li[data-s="loading"] { background:var(--white); border-color:var(--ink); }
+  body[data-state="draw"] .flow li[data-s="draw"] b,
+  body[data-state="preview"] .flow li[data-s="preview"] b,
+  body[data-state="send"] .flow li[data-s="send"] b,
+  body[data-state="loading"] .flow li[data-s="loading"] b { color:var(--ink); }
+
+  .navlink { display:inline-block; margin-top:16px; font-size:12.5px; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--ink); padding-bottom:1px; }
+  .navlink:hover { color:var(--ink2); }
+  .foot { font-size:11px; color:var(--ink3); margin-top:10px; line-height:1.5; }
+
+  .comp { list-style:none; margin:10px 0 0; padding:0; display:flex; flex-direction:column; gap:7px; }
+  .comp li { display:flex; gap:10px; align-items:flex-start; }
+  .mkr { flex:0 0 auto; width:18px; height:18px; border-radius:50%; background:var(--ink); color:var(--white);
+    font-family:var(--font-mono); font-size:10px; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .comp h4 { font-size:13px; font-weight:500; margin:0; }
+  .comp p { font-size:11.5px; line-height:1.45; color:var(--ink2); margin:1px 0 0; }
+
+  .payload { display:flex; gap:12px; margin-top:16px; padding:10px; border:1px dashed var(--ink3); border-radius:8px; }
+  .payload canvas { width:84px; height:84px; border-radius:4px; flex:0 0 auto; }
+  .payload code { display:block; font-family:var(--font-mono); font-size:10.5px; color:var(--ink2); line-height:1.6; }
+  .payload .eyebrow { margin-bottom:4px; }
+  .todo { margin-top:12px; }
+  .todo p { font-size:11.5px; line-height:1.55; color:var(--ink2); margin:4px 0 0; }
+
+  /* 裝置外框：33 吋直立螢幕（1080×1920 × 0.3375） */
+  .device { position:absolute; left:449.75px; top:24px; width:380.5px; height:672px; padding:12px 8px;
+    border-radius:18px; background:#232326; box-shadow:0 18px 40px -22px rgba(0,0,0,.55); }
+  .slot { width:364.5px; height:648px; background:var(--screen); }
+  .device-cap { position:absolute; left:0; right:0; top:-19px; text-align:center; font-family:var(--font-mono);
+    font-size:9.5px; letter-spacing:0.18em; color:var(--ink3); }
+
+  /* ---------- 簽名端畫面：原生 1080×1920 px，由 JS 縮放到外框或全螢幕 ---------- */
+  #kiosk { position:fixed; left:0; top:0; width:1080px; height:1920px; transform-origin:0 0; overflow:hidden;
+    background:var(--screen); color:var(--ink); user-select:none; -webkit-user-select:none; touch-action:none; }
+  .k-top { position:absolute; left:72px; right:72px; top:52px; display:flex; justify-content:space-between;
+    font-family:var(--font-mono); font-size:24px; letter-spacing:0.18em; color:var(--ink3);
+    padding-bottom:22px; border-bottom:2px solid var(--line2); }
+  .k-title { position:absolute; left:0; right:0; top:116px; margin:0; text-align:center; font-size:78px; font-weight:500; letter-spacing:0.02em; }
+  .k-en { position:absolute; left:0; right:0; top:222px; text-align:center; font-family:var(--font-mono); font-size:24px; letter-spacing:0.2em; color:var(--ink3); }
+  .k-inst { position:absolute; left:0; right:0; top:280px; text-align:center; font-size:36px; color:var(--ink2); transition:opacity .3s; }
+
+  .k-ball { position:absolute; left:40px; top:330px; width:1000px; height:1000px; }
+  .k-ball canvas, .k-safe, .k-fly { position:absolute; left:0; top:0; width:1000px; height:1000px; }
+  .k-shadow { position:absolute; left:250px; top:922px; width:500px; height:64px; border-radius:50%;
+    background:radial-gradient(closest-side, rgba(0,0,0,.2), rgba(0,0,0,0)); }
+  .k-safe { pointer-events:none; transition:opacity .3s; }
+  .k-safe circle { fill:none; stroke:rgba(255,255,255,.8); stroke-width:3; stroke-dasharray:14 12; transition:stroke .2s, stroke-width .2s; }
+  .k-ball.warn .k-safe circle { stroke:var(--white); stroke-width:7; }
+  .k-empty { position:absolute; left:0; right:0; top:470px; text-align:center; font-size:44px; color:rgba(255,255,255,.62);
+    pointer-events:none; transition:opacity .3s; }
+  .k-ball.inked .k-empty { opacity:0; }
+  .k-warn { position:absolute; left:0; right:0; top:938px; text-align:center; font-size:32px; color:var(--ink);
+    opacity:0; transition:opacity .2s; pointer-events:none; }
+  .k-ball.warn .k-warn { opacity:1; }
+  .k-hit { position:absolute; inset:0; }
+  .k-close { position:absolute; top:36px; right:40px; height:92px; padding:0 34px 0 26px; border-radius:46px;
+    border:3px solid var(--ink); background:var(--white); color:var(--ink); font-size:32px;
+    display:flex; align-items:center; gap:14px; opacity:0; pointer-events:none; transition:opacity .25s; }
+  .k-close svg { width:40px; height:40px; }
+  .k-rotate { position:absolute; left:0; right:0; top:936px; display:flex; align-items:center; justify-content:center; gap:16px;
+    font-size:32px; color:var(--ink2); opacity:0; transition:opacity .25s; pointer-events:none; }
+  .k-rotate svg { width:44px; height:44px; }
+  .k-trail { position:absolute; left:380px; top:520px; width:240px; height:520px; opacity:0; pointer-events:none; transform-origin:50% 0; }
+  .k-trail i { position:absolute; top:0; bottom:0; width:0; border-left:4px dashed var(--ink3); }
+  .k-trail i:nth-child(1){ left:30px; top:120px; } .k-trail i:nth-child(2){ left:118px; } .k-trail i:nth-child(3){ left:206px; top:120px; }
+
+  .k-tools { position:absolute; left:80px; right:80px; top:1330px; transition:opacity .3s; }
+  .k-lab { font-size:28px; font-weight:500; color:var(--ink2); display:flex; gap:14px; align-items:baseline; }
+  .k-lab em { font-style:normal; font-family:var(--font-mono); font-size:19px; font-weight:400; letter-spacing:0.18em; color:var(--ink3); }
+  .k-sw { display:flex; justify-content:space-between; margin-top:20px; padding:0 2px; }
+  .k-sw button { width:92px; height:92px; border-radius:50%; border:0; padding:0; background:var(--c); position:relative; }
+  .k-sw button.on::after { content:""; position:absolute; inset:-12px; border-radius:50%; border:4px solid var(--ink); }
+  .k-row2 { display:flex; justify-content:space-between; margin-top:38px; }
+  .k-grp { display:flex; gap:14px; margin-top:18px; }
+  .k-opt { width:120px; height:110px; border:3px solid var(--line); border-radius:18px; background:var(--white); color:var(--ink2);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; font-size:25px; padding:0; }
+  .k-opt.wide { width:150px; }
+  .k-opt.on { border-color:var(--ink); background:var(--ink); color:var(--white); }
+  .k-opt .dot { border-radius:50%; background:currentColor; }
+  .k-opt svg { width:40px; height:40px; }
+  .k-opt:active { transform:scale(.97); }
+
+  .k-actions { position:absolute; left:80px; right:80px; top:1716px; display:flex; gap:40px; transition:opacity .3s; }
+  .k-btn { height:136px; border-radius:68px; border:3px solid var(--ink); background:var(--white); color:var(--ink);
+    font-size:44px; font-weight:500; display:flex; align-items:center; justify-content:center; gap:18px; padding:0; }
+  .k-btn svg { width:48px; height:48px; }
+  #btnPreview { flex:0 0 360px; } #btnSend { flex:1; }
+  .k-btn.pri { background:var(--ink); color:var(--white); }
+  .k-btn:disabled { opacity:.28; cursor:default; }
+
+  .k-loading { position:absolute; inset:0; background:var(--screen); display:flex; flex-direction:column; align-items:center; justify-content:center;
+    opacity:0; pointer-events:none; transition:opacity .35s; }
+  .k-spin { width:200px; height:200px; border-radius:50%; border:10px solid var(--line2); border-top-color:var(--ink); animation:spin 1s linear infinite; }
+  .k-loading h2 { font-size:64px; font-weight:500; margin:72px 0 0; }
+  .k-loading p { font-size:34px; color:var(--ink2); margin:20px 0 0; }
+  .k-bar { width:520px; height:10px; border-radius:5px; background:var(--line2); margin-top:72px; overflow:hidden; }
+  .k-bar i { display:block; height:100%; width:0; background:var(--ink); }
+  .k-code { font-family:var(--font-mono); font-size:22px; letter-spacing:0.16em; color:var(--ink3); margin-top:30px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes fill { to { width:100%; } }
+
+  /* 模式 */
+  #kiosk[data-mode="preview"] .k-safe, #kiosk[data-mode="preview"] .k-empty { opacity:0; }
+  #kiosk[data-mode="preview"] .k-tools { opacity:.25; pointer-events:none; }
+  #kiosk[data-mode="preview"] .k-close { opacity:1; pointer-events:auto; }
+  #kiosk[data-mode="preview"] .k-rotate { opacity:1; }
+  #kiosk[data-mode="send"] .k-safe, #kiosk[data-mode="send"] .k-empty, #kiosk[data-mode="send"] .k-close,
+  #kiosk[data-mode="send"] .k-rotate, #kiosk[data-mode="send"] .k-tools, #kiosk[data-mode="send"] .k-actions,
+  #kiosk[data-mode="send"] .k-inst { opacity:0; pointer-events:none; }
+  #kiosk[data-mode="loading"] .k-loading { opacity:1; pointer-events:auto; }
+  #kiosk[data-mode="loading"] .k-bar i { animation:fill 2.4s linear forwards; }
+
+  /* 註記圓點（只在文件頁顯示） */
+  .mk { position:absolute; width:44px; height:44px; border-radius:50%; background:var(--ink); color:var(--white);
+    font-family:var(--font-mono); font-size:24px; display:flex; align-items:center; justify-content:center; pointer-events:none;
+    box-shadow:0 0 0 5px var(--screen); transition:opacity .25s; }
+  .mk.m-close { opacity:0; }
+  #kiosk[data-mode="preview"] .mk.m-close { opacity:1; }
+  #kiosk[data-mode="preview"] .mk.m-safe { opacity:0; }
+  #kiosk[data-mode="send"] .mk, #kiosk[data-mode="loading"] .mk { opacity:0; }
+  body.kioskmode .stage, body.kioskmode .mk { display:none; }
+  body.kioskmode { background:#000; }
+</style>
+</head>
+<body data-state="draw">
+
+<div class="stage" id="stage">
+  <div class="col col-l">
+    <div class="eyebrow"><a href="../" style="color:inherit;text-decoration:none">← FUTURE DNA</a> · SIGN KIOSK</div>
+    <h1>簽名介面線稿<small>WIREFRAME · v0.1</small></h1>
+    <p class="lead">33 吋直立觸控螢幕，1080 × 1920。中間的畫面可以直接操作：簽名、預覽旋轉、送出。</p>
+    <div class="hr"></div>
+    <div class="eyebrow" style="margin-bottom:10px">FLOW 互動流程</div>
+    <ol class="flow">
+      <li data-s="draw"><b>01</b><div><h3>繪製<span>DRAW</span></h3><p>球固定朝正面、不能轉動，確保簽名落在正面。只能簽在虛線安全區域內，筆跡一律白色。</p></div></li>
+      <li data-s="preview"><b>02</b><div><h3>預覽<span>PREVIEW</span></h3><p>按「預覽」後可以自由拖曳旋轉球。按右上角的 X 回到繪製，球會自動轉回正面。</p></div></li>
+      <li data-s="send"><b>03</b><div><h3>送出<span>SEND</span></h3><p>球往上飛出畫面，同時把色號＋筆跡 PNG 送到牆面投影。</p></div></li>
+      <li data-s="loading"><b>04</b><div><h3>等待中<span>LOADING</span></h3><p>過場結束後回到 01：清空筆跡，並換一個新的預設球色給下一位。</p></div></li>
+    </ol>
+    <a class="navlink" href="../sign-device/">簽名站示意圖（33 吋直立螢幕）→</a><a class="navlink" style="margin-left:16px" href="../簽名端示意與線稿.pdf" download aria-label="下載 PDF">PDF ↓</a>
+    <div class="foot">用直立螢幕開啟（或網址加 ?kiosk）會切成全螢幕，可直接上機試手感。</div>
+  </div>
+
+  <div class="device"><div class="device-cap">33" PORTRAIT · 1080 × 1920</div><div class="slot" id="slot"></div></div>
+
+  <div class="col col-r">
+    <div class="eyebrow">COMPONENTS 元件</div>
+    <ul class="comp">
+      <li><span class="mkr">A</span><div><h4>球的顏色</h4><p>固定色盤（此處 8 色為示意）。每位觀眾進來隨機給一個預設色，可以自己換。</p></div></li>
+      <li><span class="mkr">B</span><div><h4>筆畫粗細</h4><p>細／中／粗三段。橡皮擦的大小跟著這裡放大。</p></div></li>
+      <li><span class="mkr">C</span><div><h4>筆／橡皮擦／清除</h4><p>橡皮擦局部擦除；清除＝整顆重寫。</p></div></li>
+      <li><span class="mkr">D</span><div><h4>安全區域</h4><p>虛線圈外不留筆跡，簽名不會被球的邊緣裁切。</p></div></li>
+      <li><span class="mkr">E</span><div><h4>預覽／返回繪製</h4><p>預覽時色盤與工具停用，只能旋轉；X 回到繪製模式。</p></div></li>
+      <li><span class="mkr">F</span><div><h4>送出</h4><p>還沒簽名時不能按。</p></div></li>
+    </ul>
+    <div class="payload">
+      <canvas id="thumb" width="168" height="168"></canvas>
+      <div>
+        <div class="eyebrow">PAYLOAD · dna/ball/new</div>
+        <code>id: <span id="pId">—</span></code>
+        <code>colorId: <span id="pColor">—</span></code>
+        <code>signature: 512×512 PNG</code>
+        <code>透明背景 · 白色筆跡</code>
+      </div>
+    </div>
+    <div class="todo">
+      <div class="eyebrow">待確認</div>
+      <p>色盤的顏色數量與色值（筆跡固定白色，避免太淺的顏色）· 安全區域大小 · 閒置多久自動清除 · 等待畫面的時長與文案</p>
+    </div>
+  </div>
+</div>
+
+<div id="kiosk" data-mode="draw">
+  <div class="k-top"><span>FUTURE DNA</span><span>簽名區 · SIGN HERE</span></div>
+  <h2 class="k-title">點亮未來的 DNA</h2>
+  <div class="k-en">LIGHT UP THE DNA OF THE FUTURE</div>
+  <div class="k-inst" id="inst">選一個顏色，在球上簽下你的名字</div>
+
+  <div class="k-ball" id="zone">
+    <div class="k-shadow" id="shadow"></div>
+    <div class="k-trail" id="trail"><i></i><i></i><i></i></div>
+    <div class="k-fly" id="fly"><canvas id="gl" width="1000" height="1000"></canvas></div>
+    <svg class="k-safe" viewBox="0 0 1000 1000"><circle cx="500" cy="500" r="307.5" /></svg>
+    <div class="k-empty">在這裡簽名</div>
+    <div class="k-warn">請簽在虛線範圍內</div>
+    <div class="k-rotate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 8 4 4-4 4"/><path d="M2 12h20"/><path d="m6 8-4 4 4 4"/></svg>拖曳旋轉，看看你的簽名球</div>
+    <div class="k-hit" id="hit"></div>
+    <button class="k-close" id="btnClose" aria-label="返回繪製"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>返回繪製</button>
+  </div>
+
+  <div class="k-tools">
+    <div class="k-lab">球的顏色<em>COLOR</em></div>
+    <div class="k-sw" id="swatches"></div>
+    <div class="k-row2">
+      <div>
+        <div class="k-lab">筆畫粗細<em>STROKE</em></div>
+        <div class="k-grp" id="sizes">
+          <button class="k-opt" data-size="0"><span class="dot" style="width:12px;height:12px"></span>細</button>
+          <button class="k-opt" data-size="1"><span class="dot" style="width:20px;height:20px"></span>中</button>
+          <button class="k-opt" data-size="2"><span class="dot" style="width:32px;height:32px"></span>粗</button>
+        </div>
+      </div>
+      <div>
+        <div class="k-lab">工具<em>TOOLS</em></div>
+        <div class="k-grp">
+          <button class="k-opt wide" data-tool="pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>筆</button>
+          <button class="k-opt wide" data-tool="eraser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>橡皮擦</button>
+          <button class="k-opt wide" id="btnClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>清除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="k-actions">
+    <button class="k-btn" id="btnPreview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><span>預覽</span></button>
+    <button class="k-btn pri" id="btnSend" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>送出</button>
+  </div>
+
+  <div class="k-loading">
+    <div class="k-spin"></div>
+    <h2>傳送中</h2>
+    <p>你的簽名正在飛向牆面，請稍候</p>
+    <div class="k-bar"><i></i></div>
+    <div class="k-code">SENDING · dna/ball/new</div>
+  </div>
+
+  <span class="mk" style="left:18px;top:1404px">A</span>
+  <span class="mk" style="left:18px;top:1589px">B</span>
+  <span class="mk" style="left:474px;top:1589px">C</span>
+  <span class="mk m-safe" style="left:752px;top:574px">D</span>
+  <span class="mk" style="left:18px;top:1762px">E</span>
+  <span class="mk m-close" style="left:638px;top:390px">E</span>
+  <span class="mk" style="left:1018px;top:1762px">F</span>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var COLORS = [
+    { n:"紅", c:"#D6534E" }, { n:"橙", c:"#E2823A" }, { n:"金", c:"#CFA22A" }, { n:"綠", c:"#48A26A" },
+    { n:"青", c:"#2E9A99" }, { n:"藍", c:"#4A72C6" }, { n:"紫", c:"#8258C2" }, { n:"粉", c:"#CF568D" }
+  ];
+  var S = 1024;               // 筆跡貼圖邊長（送出時縮成 512）
+  var R = 0.82;               // 球半徑 / 畫布半寬（畫布 1000 → 球直徑 820）
+  var SAFE = 0.75;            // 安全區域半徑 / 球半徑
+  var SIZES = [7, 13, 22];    // 筆寬（螢幕原生 px）
+  var K = (S / 2) / (500 * R); // 螢幕 px → 貼圖 px
+
+  var kiosk = $("kiosk"), stage = $("stage"), slot = $("slot"), zone = $("zone"), hit = $("hit");
+  var cv = $("gl"), flyEl = $("fly"), shadow = $("shadow"), trail = $("trail");
+  var btnSend = $("btnSend"), btnPreview = $("btnPreview");
+  var forceKiosk = /[?&]kiosk\b/.test(location.search);
+  var kScale = 1;
+
+  var sig = document.createElement("canvas"); sig.width = sig.height = S;
+  var sx = sig.getContext("2d");
+  var probe = document.createElement("canvas"); probe.width = probe.height = 64;
+  var px = probe.getContext("2d", { willReadFrequently:true });
+
+  var st = { mode:"draw", color:0, size:1, tool:"pen", inked:false, q:[0,0,0,1], sent:0, busy:false };
+  var w = [0,0], anim = null, drag = null, stroke = null, idleT = 0;
+  var dirty = true, texDirty = true;
+
+  /* ---------- 四元數 ---------- */
+  function qMul(a,b){ return [
+    a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],
+    a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],
+    a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],
+    a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2] ]; }
+  function qAxis(x,y,z,ang){ var s = Math.sin(ang/2); return [x*s, y*s, z*s, Math.cos(ang/2)]; }
+  function qNorm(q){ var l = Math.hypot(q[0],q[1],q[2],q[3]) || 1; return [q[0]/l,q[1]/l,q[2]/l,q[3]/l]; }
+  function qSlerp(a,b,t){
+    var d = a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3];
+    if (d < 0){ b = b.map(function(v){ return -v; }); d = -d; }
+    if (d > 0.9995) return qNorm(a.map(function(v,i){ return v + (b[i]-v)*t; }));
+    var th = Math.acos(d), s = Math.sin(th), wa = Math.sin((1-t)*th)/s, wb = Math.sin(t*th)/s;
+    return a.map(function(v,i){ return v*wa + b[i]*wb; });
+  }
+  function qMat(q){ var x=q[0], y=q[1], z=q[2], ww=q[3]; return new Float32Array([
+    1-2*(y*y+z*z), 2*(x*y+z*ww),   2*(x*z-y*ww),
+    2*(x*y-z*ww),  1-2*(x*x+z*z),  2*(y*z+x*ww),
+    2*(x*z+y*ww),  2*(y*z-x*ww),   1-2*(x*x+y*y) ]); }
+  function isFront(q){ return Math.abs(q[3]) > 0.9999; }
+
+  /* ---------- WebGL：一個全畫面四邊形，片段著色器算球 ---------- */
+  var gl = cv.getContext("webgl2", { premultipliedAlpha:true, antialias:false });
+  var U = {}, tex;
+  if (gl) {
+    var VS = "#version 300 es\nin vec2 a; out vec2 vP; void main(){ vP=a; gl_Position=vec4(a,0.,1.); }";
+    var FS = [
+      "#version 300 es",
+      "precision highp float;",
+      "in vec2 vP; out vec4 o;",
+      "uniform sampler2D uSig; uniform vec3 uCol; uniform mat3 uRot; uniform float uR, uGrid, uPx;",
+      "const float PI = 3.14159265;",
+      "float gridLine(float v, float s){ float d = abs(fract(v/s+0.5)-0.5)*s; float fw = fwidth(v); return 1.0-smoothstep(0.6*fw, 1.6*fw, d); }",
+      "void main(){",
+      "  vec2 p = vP/uR; float d = length(p);",
+      "  float aa = 1.6*uPx/uR;",
+      "  float a = 1.0-smoothstep(1.0-aa, 1.0, d);",
+      "  float dd = min(d, 0.999);",
+      "  vec3 n = vec3(p/max(d,1e-5)*dd, sqrt(1.0-dd*dd));",
+      "  vec3 q = transpose(uRot)*n;",                         // 視圖法線 → 球的本地座標
+      "  vec3 L = normalize(vec3(-0.45, 0.6, 0.75));",
+      "  float df = max(dot(n,L), 0.0);",
+      "  vec3 col = uCol*(0.5+0.55*df);",
+      "  float lon = atan(q.x, q.z), lat = asin(clamp(q.y,-1.0,1.0));",
+      "  float g = max(gridLine(lon, PI/6.0)*(1.0-smoothstep(0.9,0.98,abs(q.y))), gridLine(lat, PI/6.0));",
+      "  col = mix(col, col*0.62, g*uGrid);",
+      "  float ink = texture(uSig, vec2(q.x*0.5+0.5, 0.5-q.y*0.5)).a * smoothstep(0.0, 0.08, q.z);", // 正面正投影貼上筆跡
+      "  col = mix(col, vec3(0.92+0.08*df), ink);",
+      "  vec3 H = normalize(L+vec3(0.0,0.0,1.0));",
+      "  col += pow(max(dot(n,H),0.0), 60.0)*0.32;",
+      "  col += pow(1.0-n.z, 3.0)*0.12;",
+      "  float rim = smoothstep(1.0-aa*3.2, 1.0-aa*1.1, d);",
+      "  col = mix(col, vec3(0.11), rim*0.85);",
+      "  o = vec4(col*a, a);",
+      "}"
+    ].join("\n");
+    var mk = function(type, src){ var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; };
+    var prog = gl.createProgram();
+    gl.attachShader(prog, mk(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, FS));
+    gl.linkProgram(prog); gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    var loc = gl.getAttribLocation(prog, "a"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    ["uSig","uCol","uRot","uR","uGrid","uPx"].forEach(function(n){ U[n] = gl.getUniformLocation(prog, n); });
+    tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.uniform1i(U.uSig, 0);
+  } else {
+    zone.insertAdjacentHTML("beforeend", '<div style="position:absolute;left:0;right:0;top:470px;text-align:center;font-size:32px;color:#4A4A4F">此瀏覽器不支援 WebGL2</div>');
+  }
+  function hexRgb(h){ var n = parseInt(h.slice(1), 16); return [(n>>16&255)/255, (n>>8&255)/255, (n&255)/255]; }
+  function upload(){ if (!gl) return;
+    gl.bindTexture(gl.TEXTURE_2D, tex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sig); gl.generateMipmap(gl.TEXTURE_2D); }
+  function render(){ if (!gl) return;
+    gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT);
+    var c = hexRgb(COLORS[st.color].c);
+    gl.uniform3f(U.uCol, c[0], c[1], c[2]);
+    gl.uniformMatrix3fv(U.uRot, false, qMat(st.q));
+    gl.uniform1f(U.uR, R); gl.uniform1f(U.uPx, 2/cv.width);
+    gl.uniform1f(U.uGrid, st.mode === "preview" ? 0.5 : 0.16);
+    gl.drawArrays(gl.TRIANGLES, 0, 6); }
+
+  /* ---------- 版面：文件頁（放進外框）或 kiosk（直立螢幕全螢幕） ---------- */
+  function fit(){
+    var W = innerWidth, H = innerHeight, x, y;
+    var km = forceKiosk || W/H < 0.8;
+    document.body.classList.toggle("kioskmode", km);
+    if (km) { kScale = Math.min(W/1080, H/1920); x = (W-1080*kScale)/2; y = (H-1920*kScale)/2; }
+    else {
+      stage.style.transform = "translate(-50%,-50%) scale(" + Math.min(W/1280, H/720) + ")";
+      var r = slot.getBoundingClientRect(); kScale = r.height/1920; x = r.left; y = r.top;
+    }
+    kiosk.style.transform = "translate(" + x + "px," + y + "px) scale(" + kScale + ")";
+    var b = Math.max(360, Math.min(1200, Math.round(1000*kScale*(devicePixelRatio||1))));
+    if (cv.width !== b) { cv.width = cv.height = b; dirty = true; }
+  }
+  addEventListener("resize", fit);
+
+  /* ---------- 狀態 ---------- */
+  var INST = { draw:"選一個顏色，在球上簽下你的名字", preview:"這就是你的簽名球", send:"送出！", loading:"" };
+  function setMode(m){
+    st.mode = m; kiosk.dataset.mode = m; document.body.dataset.state = m;
+    $("inst").textContent = INST[m];
+    btnPreview.disabled = m !== "draw";
+    btnPreview.querySelector("span").textContent = m === "preview" ? "預覽中" : "預覽";
+    btnSend.disabled = !st.inked || (m !== "draw" && m !== "preview");
+    dirty = true;
+  }
+  function setColor(i){
+    st.color = i; dirty = true;
+    [].forEach.call($("swatches").children, function(b, j){ b.classList.toggle("on", j === i); });
+    $("pColor").textContent = (i+1) + "（" + COLORS[i].n + "）";
+  }
+  function setSize(i){ st.size = i; [].forEach.call(document.querySelectorAll("[data-size]"), function(b){ b.classList.toggle("on", +b.dataset.size === i); }); }
+  function setTool(t){ st.tool = t; [].forEach.call(document.querySelectorAll("[data-tool]"), function(b){ b.classList.toggle("on", b.dataset.tool === t); }); }
+  function setInked(v){
+    st.inked = v; zone.classList.toggle("inked", v);
+    btnSend.disabled = !v || (st.mode !== "draw" && st.mode !== "preview");
+    drawThumb();
+  }
+  function randomColor(){ var i; do { i = Math.floor(Math.random()*COLORS.length); } while (i === st.color && COLORS.length > 1); return i; }
+
+  COLORS.forEach(function(c, i){
+    var b = document.createElement("button"); b.style.setProperty("--c", c.c); b.setAttribute("aria-label", c.n);
+    b.addEventListener("click", function(){ if (st.mode === "draw") setColor(i); });
+    $("swatches").appendChild(b);
+  });
+  [].forEach.call(document.querySelectorAll("[data-size]"), function(b){ b.addEventListener("click", function(){ setSize(+b.dataset.size); }); });
+  [].forEach.call(document.querySelectorAll("[data-tool]"), function(b){ b.addEventListener("click", function(){ setTool(b.dataset.tool); }); });
+  $("btnClear").addEventListener("click", function(){ if (st.mode !== "draw") return; sx.clearRect(0,0,S,S); texDirty = true; setInked(false); });
+
+  /* ---------- 簽名：筆跡畫在 1024² 透明畫布，正投影貼到球的正面 ---------- */
+  function toBall(e){ var r = cv.getBoundingClientRect();
+    var nx = (e.clientX - r.left)/r.width*2 - 1, ny = 1 - (e.clientY - r.top)/r.height*2;
+    var bx = nx/R, by = ny/R;
+    return { x:(bx*0.5+0.5)*S, y:(0.5-by*0.5)*S, out: Math.hypot(bx, by) > SAFE }; }
+  function mid(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+  function ink(fn){
+    sx.save(); sx.beginPath(); sx.arc(S/2, S/2, SAFE*S/2, 0, Math.PI*2); sx.clip();   // 安全區域外一律不留筆跡
+    var er = st.tool === "eraser";
+    sx.globalCompositeOperation = er ? "destination-out" : "source-over";
+    sx.strokeStyle = sx.fillStyle = "#FFFFFF"; sx.lineCap = sx.lineJoin = "round";
+    sx.lineWidth = SIZES[st.size]*K*(er ? 2.4 : 1);
+    fn(); sx.restore(); texDirty = true;
+  }
+  var warnT = 0;
+  function warn(){ zone.classList.add("warn"); clearTimeout(warnT); warnT = setTimeout(function(){ zone.classList.remove("warn"); }, 1100); }
+  function addPoint(p){
+    var pts = stroke.pts; pts.push(p); var n = pts.length;
+    if (p.out) warn();
+    if (n === 2) ink(function(){ var m = mid(pts[0], pts[1]); sx.beginPath(); sx.moveTo(pts[0].x, pts[0].y); sx.lineTo(m.x, m.y); sx.stroke(); });
+    else if (n > 2) ink(function(){ var a = pts[n-3], b = pts[n-2], c = pts[n-1], m1 = mid(a,b), m2 = mid(b,c);
+      sx.beginPath(); sx.moveTo(m1.x, m1.y); sx.quadraticCurveTo(b.x, b.y, m2.x, m2.y); sx.stroke(); });
+  }
+  function checkInk(){ px.clearRect(0,0,64,64); px.drawImage(sig, 0, 0, 64, 64);
+    var d = px.getImageData(0,0,64,64).data; for (var i = 3; i < d.length; i += 4) if (d[i] > 8) return true; return false; }
+
+  hit.addEventListener("pointerdown", function(e){
+    if (st.busy) return;
+    hit.setPointerCapture(e.pointerId);
+    if (st.mode === "draw") {
+      var p = toBall(e); stroke = { id:e.pointerId, pts:[p] };
+      if (p.out) warn();
+      ink(function(){ sx.beginPath(); sx.arc(p.x, p.y, sx.lineWidth/2, 0, Math.PI*2); sx.fill(); });
+      if (st.tool === "pen" && !p.out) setInked(true);
+    } else if (st.mode === "preview") {
+      drag = { id:e.pointerId, x:e.clientX, y:e.clientY, t:performance.now() }; w = [0,0];
+    }
+  });
+  hit.addEventListener("pointermove", function(e){
+    if (stroke && e.pointerId === stroke.id) {
+      var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; if (!evs.length) evs = [e];
+      evs.forEach(function(ev){ addPoint(toBall(ev)); });
+      if (st.tool === "pen" && !st.inked && !stroke.pts[stroke.pts.length-1].out) setInked(true);
+    } else if (drag && e.pointerId === drag.id) {
+      var now = performance.now(), dx = (e.clientX - drag.x)/kScale, dy = (e.clientY - drag.y)/kScale, dt = Math.max(16, now - drag.t);   // 以一幀為下限，避免高頻事件算出爆量慣性
+      var m = Math.hypot(dx, dy);
+      if (m > 0) {
+        var ang = m*0.0055, ax = dy/m, ay = dx/m;              // 往右拖＝繞 Y 軸正轉；往下拖＝繞 X 軸正轉
+        st.q = qNorm(qMul(qAxis(ax, ay, 0, ang), st.q));
+        w = [w[0]*0.4 + ax*ang/dt*0.6, w[1]*0.4 + ay*ang/dt*0.6];
+        var wm = Math.hypot(w[0], w[1]); if (wm > 0.012) { w[0] *= 0.012/wm; w[1] *= 0.012/wm; }
+        dirty = true;
+      }
+      drag.x = e.clientX; drag.y = e.clientY; drag.t = now; idleT = now;
+    }
+  });
+  function endPointer(e){
+    if (stroke && e.pointerId === stroke.id) {
+      var pts = stroke.pts, n = pts.length;
+      if (n >= 2) ink(function(){ var m = mid(pts[n-2], pts[n-1]); sx.beginPath(); sx.moveTo(m.x, m.y); sx.lineTo(pts[n-1].x, pts[n-1].y); sx.stroke(); });
+      stroke = null; setInked(checkInk());
+    }
+    if (drag && e.pointerId === drag.id) { if (performance.now() - drag.t > 90) w = [0,0]; drag = null; idleT = performance.now(); }
+  }
+  hit.addEventListener("pointerup", endPointer);
+  hit.addEventListener("pointercancel", endPointer);
+  kiosk.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
+  /* ---------- 預覽 / 返回繪製 ---------- */
+  function turnFront(dur, cb){ w = [0,0]; if (isFront(st.q)) { st.q = [0,0,0,1]; cb && cb(); return; }
+    anim = { from:st.q.slice(), t0:performance.now(), dur:dur, cb:cb }; }
+  btnPreview.addEventListener("click", function(){ if (st.mode !== "draw" || st.busy) return; setMode("preview"); idleT = performance.now(); });
+  $("btnClose").addEventListener("click", function(){
+    if (st.mode !== "preview" || st.busy) return;
+    st.busy = true; turnFront(650, function(){ st.busy = false; setMode("draw"); });
+  });
+
+  /* ---------- 送出：轉回正面 → 往上飛出 → 等待中 → 回到簽名介面 ---------- */
+  btnSend.addEventListener("click", function(){
+    if (!st.inked || st.busy || (st.mode !== "draw" && st.mode !== "preview")) return;
+    st.busy = true; drag = null; setMode("send");
+    turnFront(420, fly);
+  });
+  function stamp(){ var d = new Date(), p = function(v){ return String(v).padStart(2, "0"); };
+    return "b_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + String(st.sent).padStart(4, "0"); }
+  var flyAnim, shadowAnim;
+  function fly(){
+    st.sent++; $("pId").textContent = stamp();
+    shadowAnim = shadow.animate([{ opacity:1 }, { opacity:0 }], { duration:600, delay:150, fill:"forwards" });
+    trail.animate([
+      { opacity:0, transform:"translateY(0) scaleY(.2)" },
+      { opacity:1, transform:"translateY(-80px) scaleY(1)", offset:.45 },
+      { opacity:0, transform:"translateY(-460px) scaleY(.6)" }
+    ], { duration:1000, delay:200, easing:"ease-out" });
+    flyAnim = flyEl.animate([
+      { transform:"translateY(0) scale(1)", easing:"cubic-bezier(.3,0,.4,1)" },
+      { transform:"translateY(36px) scale(.95)", offset:.18, easing:"cubic-bezier(.55,0,.85,.3)" },
+      { transform:"translateY(-1480px) scale(.42)" }
+    ], { duration:1150, fill:"forwards" });
+    flyAnim.onfinish = function(){
+      setMode("loading");
+      setTimeout(reset, 450);
+      setTimeout(comeBack, 2900);
+    };
+  }
+  function reset(){
+    sx.clearRect(0,0,S,S); texDirty = true;
+    st.q = [0,0,0,1]; w = [0,0];
+    setColor(randomColor()); setSize(1); setTool("pen"); setInked(false);
+    if (flyAnim) flyAnim.cancel(); if (shadowAnim) shadowAnim.cancel();
+    flyEl.style.opacity = 0; shadow.style.opacity = 0;
+  }
+  function comeBack(){
+    setMode("draw"); st.busy = false;
+    flyEl.style.opacity = ""; shadow.style.opacity = "";
+    flyEl.animate([
+      { transform:"scale(.5)", opacity:0 },
+      { transform:"scale(1.05)", opacity:1, offset:.65 },
+      { transform:"scale(1)", opacity:1 }
+    ], { duration:560, delay:250, easing:"ease-out", fill:"backwards" });
+    shadow.animate([{ opacity:0 }, { opacity:1 }], { duration:500, delay:350, fill:"backwards" });
+  }
+
+  /* ---------- 送出內容縮圖（512² 透明 PNG，灰棋盤底才看得到白字） ---------- */
+  var th = $("thumb"), tx = th.getContext("2d");
+  function drawThumb(){
+    var n = th.width, c = 12;
+    for (var y = 0; y < n; y += c) for (var x = 0; x < n; x += c) { tx.fillStyle = ((x+y)/c) % 2 ? "#9C9CA1" : "#B4B4B8"; tx.fillRect(x, y, c, c); }
+    tx.drawImage(sig, 0, 0, n, n);
+  }
+  function exportPNG(){ var o = document.createElement("canvas"); o.width = o.height = 512; o.getContext("2d").drawImage(sig, 0, 0, 512, 512); return o.toDataURL("image/png"); }
+  window.FutureDNA = { exportPNG:exportPNG, state:st };
+
+  /* ---------- 迴圈 ---------- */
+  var last = performance.now();
+  function tick(t){
+    var dt = Math.min(40, t - last); last = t;
+    if (anim) {
+      var k = Math.min(1, (t - anim.t0)/anim.dur), e = 1 - Math.pow(1-k, 3);
+      st.q = qSlerp(anim.from, [0,0,0,1], e); dirty = true;
+      if (k >= 1) { st.q = [0,0,0,1]; var cb = anim.cb; anim = null; cb && cb(); }
+    } else if (st.mode === "preview" && !drag) {
+      var m = Math.hypot(w[0], w[1]);
+      if (m > 2e-5) {                                           // 放手後的慣性
+        st.q = qNorm(qMul(qAxis(w[0]/m, w[1]/m, 0, m*dt), st.q));
+        var f = Math.pow(0.993, dt); w[0] *= f; w[1] *= f; dirty = true; idleT = t;
+      } else if (t - idleT > 1600) {                            // 閒置時緩慢自轉，提示可以轉
+        st.q = qNorm(qMul(qAxis(0, 1, 0, 0.00035*dt), st.q)); dirty = true;
+      }
+    }
+    if (texDirty) { upload(); texDirty = false; dirty = true; }
+    if (dirty) { render(); dirty = false; }
+    requestAnimationFrame(tick);
+  }
+
+  fit();
+  setColor(randomColor()); setSize(1); setTool("pen"); setInked(false); setMode("draw");
+  requestAnimationFrame(tick);
+  addEventListener("keydown", function(e){
+    if (e.key === "f" || e.key === "F") { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+  });
+})();
+</script>
+</body>
+</html>

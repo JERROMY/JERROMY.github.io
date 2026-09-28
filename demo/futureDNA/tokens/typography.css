@@ -1,0 +1,45 @@
+/* ============================================================
+   no.X / MiraMeta — Typography tokens
+   ============================================================ */
+:root {
+  /* --- Families --- */
+  --font-display: 'Hanken Grotesk', 'Noto Sans TC', system-ui, sans-serif; /* refined grotesque, rounded two-story g */
+  --font-wordmark: 'Archivo Black', 'Space Grotesk', system-ui, sans-serif; /* the no.X mark — heavy round black */
+  --font-sans:    'Hanken Grotesk', 'Noto Sans TC', system-ui, sans-serif;
+  --font-tech:    'Space Grotesk', 'Noto Sans TC', system-ui, sans-serif; /* optional techy accent */
+  --font-mono:    'Space Mono', ui-monospace, 'SFMono-Regular', monospace;
+  --font-cjk:     'Noto Sans TC', 'Hanken Grotesk', system-ui, sans-serif;
+
+  /* --- Weights --- */
+  --fw-light:     300; /* @kind font */
+  --fw-regular:   400; /* @kind font */
+  --fw-medium:    500; /* @kind font */
+  --fw-semibold:  600; /* @kind font */
+  --fw-bold:      700; /* @kind font */
+  --fw-black:     900; /* @kind font */ /* CJK display only */
+
+  /* --- Type scale (px @ 1.0 root) --- */
+  --fs-hero:      clamp(3.25rem, 6vw, 6rem);  /* @kind font */ /* fluid hero display */
+  --fs-display:   3rem;     /* 48 */
+  --fs-h1:        2.25rem;  /* 36 */
+  --fs-h2:        1.75rem;  /* 28 */
+  --fs-h3:        1.375rem; /* 22 */
+  --fs-title:     1.125rem; /* 18 */
+  --fs-body:      1rem;     /* 16 */
+  --fs-sm:        0.875rem; /* 14 */
+  --fs-xs:        0.75rem;  /* 12 */
+  --fs-hud:       0.6875rem;/* 11 — mono HUD label */
+
+  /* --- Line heights --- */
+  --lh-tight:     1.04; /* @kind font */
+  --lh-snug:      1.18; /* @kind font */
+  --lh-normal:    1.5; /* @kind font */
+  --lh-relaxed:   1.7; /* @kind font */
+
+  /* --- Letter spacing --- */
+  --ls-tightest:  -0.03em; /* @kind font */
+  --ls-tight:     -0.01em; /* @kind font */
+  --ls-normal:    0; /* @kind font */
+  --ls-wide:      0.08em; /* @kind font */
+  --ls-hud:       0.22em; /* @kind font */
+}
