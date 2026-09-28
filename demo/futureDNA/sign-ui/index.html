@@ -167,7 +167,7 @@
 
 <div class="stage" id="stage">
   <div class="col col-l">
-    <div class="eyebrow"><a href="../" style="color:inherit;text-decoration:none">← FUTURE DNA</a> · SIGN KIOSK</div>
+    <div class="eyebrow"><a href="../" style="color:inherit;text-decoration:none">← FUTURE DNA</a> · SIGNATURE</div>
     <h1>簽名介面線稿<small>WIREFRAME · v0.1</small></h1>
     <p class="lead">33 吋直立觸控螢幕，1080 × 1920。中間的畫面可以直接操作：簽名、預覽旋轉、送出。</p>
     <div class="hr"></div>
@@ -178,8 +178,8 @@
       <li data-s="send"><b>03</b><div><h3>送出<span>SEND</span></h3><p>球往上飛出畫面，同時把色號＋筆跡 PNG 送到牆面投影。</p></div></li>
       <li data-s="loading"><b>04</b><div><h3>等待中<span>LOADING</span></h3><p>過場結束後回到 01：清空筆跡，並換一個新的預設球色給下一位。</p></div></li>
     </ol>
-    <a class="navlink" href="../sign-device/">簽名站示意圖（33 吋直立螢幕）→</a><a class="navlink" style="margin-left:16px" href="../簽名端示意與線稿.pdf" download aria-label="下載 PDF">PDF ↓</a>
-    <div class="foot">用直立螢幕開啟（或網址加 ?kiosk）會切成全螢幕，可直接上機試手感。</div>
+    <a class="navlink" href="../sign-device/">簽名裝置示意（嵌入牆面）→</a><a class="navlink" style="margin-left:16px" href="../簽名端示意與線稿.pdf" download aria-label="下載 PDF">PDF ↓</a>
+    <div class="foot">用直立螢幕開啟（或網址加 ?full）會切成全螢幕，可直接上機試手感。</div>
   </div>
 
   <div class="device"><div class="device-cap">33" PORTRAIT · 1080 × 1920</div><div class="slot" id="slot"></div></div>
@@ -290,7 +290,7 @@
   var kiosk = $("kiosk"), stage = $("stage"), slot = $("slot"), zone = $("zone"), hit = $("hit");
   var cv = $("gl"), flyEl = $("fly"), shadow = $("shadow"), trail = $("trail");
   var btnSend = $("btnSend"), btnPreview = $("btnPreview");
-  var forceKiosk = /[?&]kiosk\b/.test(location.search);
+  var forceKiosk = /[?&](full|kiosk)\b/.test(location.search);
   var kScale = 1;
 
   var sig = document.createElement("canvas"); sig.width = sig.height = S;
