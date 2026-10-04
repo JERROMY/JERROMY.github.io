@@ -102,9 +102,10 @@
   .k-rotate { position:absolute; left:0; right:0; top:936px; display:flex; align-items:center; justify-content:center; gap:16px;
     font-size:32px; color:var(--ink2); opacity:0; transition:opacity .25s; pointer-events:none; }
   .k-rotate svg { width:44px; height:44px; }
-  .k-trail { position:absolute; left:380px; top:520px; width:240px; height:520px; opacity:0; pointer-events:none; transform-origin:50% 0; }
-  .k-trail i { position:absolute; top:0; bottom:0; width:0; border-left:4px dashed var(--ink3); }
-  .k-trail i:nth-child(1){ left:30px; top:120px; } .k-trail i:nth-child(2){ left:118px; } .k-trail i:nth-child(3){ left:206px; top:120px; }
+  /* 速度線：球往左飛，線拖在球的右側 */
+  .k-trail { position:absolute; left:520px; top:380px; width:520px; height:240px; opacity:0; pointer-events:none; transform-origin:0 50%; }
+  .k-trail i { position:absolute; left:0; right:0; height:0; border-top:4px dashed var(--ink3); }
+  .k-trail i:nth-child(1){ top:30px; left:120px; } .k-trail i:nth-child(2){ top:118px; } .k-trail i:nth-child(3){ top:206px; left:120px; }
 
   .k-tools { position:absolute; left:80px; right:80px; top:1330px; transition:opacity .3s; }
   .k-lab { font-size:28px; font-weight:500; color:var(--ink2); display:flex; gap:14px; align-items:baseline; }
@@ -138,6 +139,10 @@
   .k-bar { width:520px; height:10px; border-radius:5px; background:var(--line2); margin-top:72px; overflow:hidden; }
   .k-bar i { display:block; height:100%; width:0; background:var(--ink); }
   .k-code { font-family:var(--font-mono); font-size:22px; letter-spacing:0.16em; color:var(--ink3); margin-top:30px; }
+  .k-net { display:none; align-items:center; gap:12px; }
+  .k-net i { width:14px; height:14px; border-radius:50%; border:2px solid var(--ink3); }
+  .k-net.on i { background:var(--ink); border-color:var(--ink); }
+  body.ws .k-net { display:flex; }
   @keyframes spin { to { transform:rotate(360deg); } }
   @keyframes fill { to { width:100%; } }
 
@@ -176,7 +181,7 @@
     <ol class="flow">
       <li data-s="draw"><b>01</b><div><h3>繪製<span>DRAW</span></h3><p>球固定朝正面、不能轉動，確保簽名落在正面。只能簽在虛線安全區域內，筆跡一律白色。</p></div></li>
       <li data-s="preview"><b>02</b><div><h3>預覽<span>PREVIEW</span></h3><p>按「預覽」後可以自由拖曳旋轉球。按右上角的 X 回到繪製，球會自動轉回正面。</p></div></li>
-      <li data-s="send"><b>03</b><div><h3>送出<span>SEND</span></h3><p>球往上飛出畫面，同時把色號＋筆跡 PNG 送到牆面投影。</p></div></li>
+      <li data-s="send"><b>03</b><div><h3>送出<span>SEND</span></h3><p>球往左飛出畫面，同時把色號＋筆跡 PNG 送到牆面投影（牆面上從右側飛入）。</p></div></li>
       <li data-s="loading"><b>04</b><div><h3>等待中<span>LOADING</span></h3><p>過場結束後回到 01：清空筆跡，並換一個新的預設球色給下一位。</p></div></li>
     </ol>
     <a class="navlink" href="../sign-device/">簽名裝置示意（嵌入牆面）→</a><a class="navlink" style="margin-left:16px" href="../簽名端示意與線稿.pdf" download aria-label="下載 PDF">PDF ↓</a>
@@ -213,7 +218,7 @@
 </div>
 
 <div id="kiosk" data-mode="draw">
-  <div class="k-top"><span>FUTURE DNA</span><span>簽名區 · SIGN HERE</span></div>
+  <div class="k-top"><span>FUTURE DNA</span><span class="k-net" id="net"><i></i><b id="netTxt" style="font-weight:400">OFFLINE</b></span><span>簽名區 · SIGN HERE</span></div>
   <h2 class="k-title">點亮未來的 DNA</h2>
   <div class="k-en">LIGHT UP THE DNA OF THE FUTURE</div>
   <div class="k-inst" id="inst">選一個顏色，在球上簽下你的名字</div>
@@ -263,7 +268,7 @@
     <h2>傳送中</h2>
     <p>你的簽名正在飛向牆面，請稍候</p>
     <div class="k-bar"><i></i></div>
-    <div class="k-code">SENDING · dna/ball/new</div>
+    <div class="k-code" id="kCode">SENDING · dna/ball/new</div>
   </div>
 
   <span class="mk" style="left:18px;top:1404px">A</span>
@@ -516,27 +521,32 @@
     st.busy = true; turnFront(650, function(){ st.busy = false; setMode("draw"); });
   });
 
-  /* ---------- 送出：轉回正面 → 往上飛出 → 等待中 → 回到簽名介面 ---------- */
+  /* ---------- 送出：轉回正面 → 往左飛出 → 等待中 → 回到簽名介面 ---------- */
   btnSend.addEventListener("click", function(){
     if (!st.inked || st.busy || (st.mode !== "draw" && st.mode !== "preview")) return;
     st.busy = true; drag = null; setMode("send");
     turnFront(420, fly);
   });
-  function stamp(){ var d = new Date(), p = function(v){ return String(v).padStart(2, "0"); };
-    return "b_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + String(st.sent).padStart(4, "0"); }
+  // id 要跨重新整理也不重複（中繼端依 id 去重），所以帶時間＋亂數，不用流水號
+  function stamp(){ var d = new Date(), p = function(v, n){ return String(v).padStart(n || 2, "0"); };
+    return "b_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) +
+      "_" + Math.random().toString(36).slice(2, 6); }
   var flyAnim, shadowAnim;
   function fly(){
-    st.sent++; $("pId").textContent = stamp();
+    st.sent++;
+    var ball = { type:"ball", id:stamp(), colorId:st.color + 1, color:COLORS[st.color].c, signature:exportPNG(), createdAt:new Date().toISOString() };
+    $("pId").textContent = ball.id;
+    net.send(ball);
     shadowAnim = shadow.animate([{ opacity:1 }, { opacity:0 }], { duration:600, delay:150, fill:"forwards" });
     trail.animate([
-      { opacity:0, transform:"translateY(0) scaleY(.2)" },
-      { opacity:1, transform:"translateY(-80px) scaleY(1)", offset:.45 },
-      { opacity:0, transform:"translateY(-460px) scaleY(.6)" }
+      { opacity:0, transform:"translateX(0) scaleX(.2)" },
+      { opacity:1, transform:"translateX(-80px) scaleX(1)", offset:.45 },
+      { opacity:0, transform:"translateX(-460px) scaleX(.6)" }
     ], { duration:1000, delay:200, easing:"ease-out" });
     flyAnim = flyEl.animate([
-      { transform:"translateY(0) scale(1)", easing:"cubic-bezier(.3,0,.4,1)" },
-      { transform:"translateY(36px) scale(.95)", offset:.18, easing:"cubic-bezier(.55,0,.85,.3)" },
-      { transform:"translateY(-1480px) scale(.42)" }
+      { transform:"translateX(0) scale(1)", easing:"cubic-bezier(.3,0,.4,1)" },
+      { transform:"translateX(36px) scale(.95)", offset:.18, easing:"cubic-bezier(.55,0,.85,.3)" },   // 先往右蓄力
+      { transform:"translateX(-1480px) scale(.42)" }
     ], { duration:1150, fill:"forwards" });
     flyAnim.onfinish = function(){
       setMode("loading");
@@ -570,6 +580,44 @@
     tx.drawImage(sig, 0, 0, n, n);
   }
   function exportPNG(){ var o = document.createElement("canvas"); o.width = o.height = 512; o.getContext("2d").drawImage(sig, 0, 0, 512, 512); return o.toDataURL("image/png"); }
+  /* ---------- 連線：?ws（同主機 /ws）或 ?ws=192.168.1.10:8080。沒帶參數就只是線稿，不連線 ---------- */
+  var net = (function(){
+    var m = /[?&]ws(?:=([^&]*))?(?:&|$)/.exec(location.search);
+    if (!m) return { send:function(){} };
+    var url = m[1] ? "ws://" + decodeURIComponent(m[1]).replace(/^wss?:\/\//, "").replace(/\/ws$/, "") + "/ws"
+                   : (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
+    var KEY = "futuredna:outbox", sock = null, retry = 0;
+    var box = []; try { box = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}   // 未確認的球：斷線、重新整理都不會掉
+    function save(){ try { localStorage.setItem(KEY, JSON.stringify(box)); } catch (e) {} }
+    function status(){
+      var on = sock && sock.readyState === 1;
+      $("net").classList.toggle("on", on);
+      $("netTxt").textContent = on ? (box.length ? "SENDING " + box.length : "ONLINE") : (box.length ? "OFFLINE · " + box.length + " QUEUED" : "OFFLINE");
+    }
+    function flush(){ if (sock && sock.readyState === 1) box.forEach(function(b){ sock.send(JSON.stringify(b)); }); }
+    function connect(){
+      try { sock = new WebSocket(url); } catch (e) { return later(); }
+      sock.onopen = function(){ retry = 0; sock.send(JSON.stringify({ type:"hello", role:"sign" })); flush(); status(); };
+      sock.onmessage = function(ev){
+        var msg; try { msg = JSON.parse(ev.data); } catch (e) { return; }
+        if (msg.type === "ack") {
+          box = box.filter(function(b){ return b.id !== msg.id; }); save(); status();
+          if (msg.id === $("pId").textContent) $("kCode").textContent = "SENT · " + msg.id;
+        }
+      };
+      sock.onclose = function(){ status(); later(); };
+      sock.onerror = function(){};
+    }
+    function later(){ setTimeout(connect, Math.min(5000, 500 * Math.pow(2, retry++))); }
+    document.body.classList.add("ws");
+    connect(); status();
+    return { send:function(b){
+      box.push(b); save(); status();
+      $("kCode").textContent = sock && sock.readyState === 1 ? "SENDING · " + b.id : "QUEUED · 連線後自動補送";
+      if (sock && sock.readyState === 1) sock.send(JSON.stringify(b));
+    } };
+  })();
+
   window.FutureDNA = { exportPNG:exportPNG, state:st };
 
   /* ---------- 迴圈 ---------- */
