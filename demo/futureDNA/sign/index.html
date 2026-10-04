@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<script src="../gate.js" data-key="futuredna" data-hash="8cc736bc28e4b04bc2f7e1f83f8db1e2c4177df8964729d99cce183036804707" data-note="輸入密碼後即可使用簽名介面。"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Future DNA · 簽名</title>
+<link rel="stylesheet" href="../tokens/fonts.css" />
+<link rel="stylesheet" href="../tokens/colors.css" />
+<link rel="stylesheet" href="../tokens/typography.css" />
+<link rel="stylesheet" href="../tokens/spacing.css" />
+<link rel="stylesheet" href="../tokens/base.css" />
+<style>
+  /* 簽名端正式介面：原生 1080×1920（32 吋直立），等比縮放置中。視覺依 Design.md（no.X 深色系統） */
+  html, body { height:100%; overflow:hidden; }
+  body { background:var(--nx-void); }
+  button { font-family:inherit; cursor:pointer; color:inherit; }
+
+  #screen { position:fixed; left:0; top:0; width:1080px; height:1920px; transform-origin:0 0; overflow:hidden;
+    background:
+      radial-gradient(70% 42% at 50% 43%, var(--nx-deck-ink) 0%, rgba(14,20,48,0) 100%),
+      radial-gradient(90% 50% at 85% 0%, rgba(142,123,196,.16) 0%, rgba(7,7,12,0) 70%),
+      var(--nx-void);
+    color:var(--text-strong); user-select:none; -webkit-user-select:none; touch-action:none; }
+  #stars { position:absolute; inset:0; width:1080px; height:1920px; pointer-events:none; }
+  .tick { position:absolute; width:28px; height:28px; border:0 solid var(--accent-signal); opacity:.7; pointer-events:none; }
+  .tick.tl { left:32px; top:32px; border-top-width:2px; border-left-width:2px; }
+  .tick.tr { right:32px; top:32px; border-top-width:2px; border-right-width:2px; }
+  .tick.bl { left:32px; bottom:32px; border-bottom-width:2px; border-left-width:2px; }
+  .tick.br { right:32px; bottom:32px; border-bottom-width:2px; border-right-width:2px; }
+
+  /* ---------- 頂部 ---------- */
+  .hud { position:absolute; left:72px; right:72px; top:60px; display:flex; justify-content:space-between; align-items:center;
+    font-family:var(--font-mono); font-size:20px; letter-spacing:var(--ls-hud); text-transform:uppercase; color:var(--text-muted);
+    padding-bottom:22px; border-bottom:1px solid var(--border-default); }
+  .net { display:flex; align-items:center; gap:12px; }
+  .net i { width:12px; height:12px; border-radius:50%; background:var(--nx-faint); }
+  .net.on i { background:var(--accent-signal); box-shadow:0 0 14px 2px var(--nx-lime-glow); }
+  .net.on { color:var(--accent-signal); }
+  .title { position:absolute; left:0; right:0; top:128px; margin:0; text-align:center; font-family:var(--font-cjk);
+    font-size:84px; font-weight:var(--fw-medium); letter-spacing:0.04em; line-height:1.1; color:var(--text-strong); }
+  .title b { font-family:var(--font-display); font-weight:var(--fw-semibold); letter-spacing:0.02em;
+    background:var(--nx-iridescent); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .sub { position:absolute; left:0; right:0; top:234px; text-align:center; font-family:var(--font-mono); font-size:20px;
+    letter-spacing:var(--ls-hud); color:var(--text-muted); }
+  .inst { position:absolute; left:0; right:0; top:282px; text-align:center; font-size:34px; color:var(--text-body);
+    transition:opacity var(--dur-slow); }
+
+  /* ---------- 球 ---------- */
+  .zone { position:absolute; left:40px; top:320px; width:1000px; height:1000px; }
+  .fly, .safe, .hit { position:absolute; left:0; top:0; width:1000px; height:1000px; }
+  .fly canvas { position:absolute; left:-300px; top:-300px; width:1600px; height:1600px; pointer-events:none; }
+  .floor { position:absolute; left:230px; top:930px; width:540px; height:70px; border-radius:50%; pointer-events:none;
+    background:radial-gradient(closest-side, color-mix(in srgb, var(--ball) 34%, transparent), transparent); }
+  .safe { pointer-events:none; transition:opacity var(--dur-base); }
+  .safe circle { fill:none; stroke:rgba(244,246,251,.5); stroke-width:2.5; stroke-dasharray:12 12; transition:stroke var(--dur-fast), stroke-width var(--dur-fast); }
+  .zone.warn .safe circle { stroke:var(--nx-gold); stroke-width:6; }
+  .empty { position:absolute; left:0; right:0; top:472px; text-align:center; font-size:42px; color:rgba(244,246,251,.6);
+    pointer-events:none; transition:opacity var(--dur-base); }
+  .zone.inked .empty { opacity:0; }
+  .below { position:absolute; left:0; right:0; top:928px; display:flex; align-items:center; justify-content:center; gap:16px;
+    font-size:30px; pointer-events:none; transition:opacity var(--dur-base); }
+  .warnmsg { color:var(--nx-gold); opacity:0; }
+  .zone.warn .warnmsg { opacity:1; }
+  .rotate { color:var(--text-body); opacity:0; }
+  .rotate svg { width:40px; height:40px; }
+  .trail { position:absolute; left:560px; top:350px; width:560px; height:300px; opacity:0; pointer-events:none; transform-origin:0 50%; }
+  .trail i { position:absolute; left:0; right:0; height:4px; border-radius:2px;
+    background:linear-gradient(90deg, #fff 0%, var(--ball) 18%, transparent 100%); filter:drop-shadow(0 0 10px var(--ball)); }
+  .trail i:nth-child(1){ top:40px; left:140px; } .trail i:nth-child(2){ top:148px; height:6px; } .trail i:nth-child(3){ top:256px; left:120px; }
+
+  /* 球的樣式切換（左上）與返回繪製（右上） */
+  .seg { position:absolute; left:16px; top:20px; display:flex; padding:6px; border-radius:var(--radius-pill);
+    background:rgba(18,18,28,.55); border:1px solid var(--border-default); backdrop-filter:blur(var(--blur-md)); -webkit-backdrop-filter:blur(var(--blur-md));
+    transition:opacity var(--dur-base); }
+  .seg button { height:76px; min-width:150px; padding:0 26px; border:1px solid transparent; border-radius:var(--radius-pill); background:none;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; color:var(--text-muted);
+    transition:color var(--dur-base), background var(--dur-base), border-color var(--dur-base); }
+  .seg button b { font-size:28px; font-weight:var(--fw-medium); }
+  .seg button small { font-family:var(--font-mono); font-size:13px; letter-spacing:var(--ls-hud); }
+  .seg button.on { color:var(--text-strong); background:rgba(244,246,251,.1); border-color:var(--border-strong); }
+  .close { position:absolute; right:16px; top:20px; height:88px; padding:0 34px 0 26px; border-radius:var(--radius-pill);
+    background:rgba(18,18,28,.55); border:1px solid var(--border-strong); backdrop-filter:blur(var(--blur-md)); -webkit-backdrop-filter:blur(var(--blur-md));
+    color:var(--text-strong); font-size:30px; display:flex; align-items:center; gap:12px; opacity:0; pointer-events:none; transition:opacity var(--dur-base); }
+  .close svg { width:36px; height:36px; }
+
+  /* ---------- 工具面板 ---------- */
+  .panel { position:absolute; left:56px; right:56px; top:1300px; padding:38px 44px 40px; border-radius:var(--radius-2xl);
+    background:rgba(18,18,28,.55); border:1px solid var(--border-default); backdrop-filter:blur(var(--blur-lg)); -webkit-backdrop-filter:blur(var(--blur-lg));
+    box-shadow:var(--shadow-card); transition:opacity var(--dur-slow); }
+  .lab { display:flex; align-items:baseline; gap:14px; font-size:26px; font-weight:var(--fw-medium); color:var(--text-body); }
+  .lab em { font-style:normal; font-family:var(--font-mono); font-size:15px; font-weight:400; letter-spacing:var(--ls-hud); color:var(--text-muted); }
+  .sw { display:flex; justify-content:space-between; margin-top:24px; padding:0 8px; }
+  .sw button { width:80px; height:80px; border-radius:50%; border:0; padding:0; background:var(--c); position:relative;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.18); transition:transform var(--dur-fast) var(--ease-out); }
+  .sw button::after { content:""; position:absolute; inset:-11px; border-radius:50%; border:2px solid transparent; transition:border-color var(--dur-base), box-shadow var(--dur-base); }
+  .sw button.on::after { border-color:var(--text-strong); box-shadow:0 0 26px -2px var(--c); }
+  .sw button:active { transform:scale(.94); }
+  .row2 { display:flex; justify-content:space-between; margin-top:40px; }
+  .grp { display:flex; gap:14px; margin-top:18px; }
+  .opt { width:112px; height:100px; border:1px solid var(--border-default); border-radius:var(--radius-lg); background:rgba(244,246,251,.03);
+    color:var(--text-muted); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; font-size:24px; padding:0;
+    transition:color var(--dur-base), background var(--dur-base), border-color var(--dur-base); }
+  .opt.wide { width:140px; }
+  .opt.on { color:var(--text-strong); background:rgba(244,246,251,.1); border-color:var(--border-strong); }
+  .opt .dot { border-radius:50%; background:currentColor; }
+  .opt svg { width:36px; height:36px; }
+  .opt:active { transform:scale(.97); }
+
+  .actions { position:absolute; left:56px; right:56px; top:1748px; display:flex; gap:28px; transition:opacity var(--dur-slow); }
+  .btn { height:120px; border-radius:var(--radius-pill); font-size:40px; font-weight:var(--fw-medium); letter-spacing:0.04em;
+    display:flex; align-items:center; justify-content:center; gap:16px; padding:0;
+    transition:background var(--dur-base), box-shadow var(--dur-base), opacity var(--dur-base); }
+  .btn svg { width:44px; height:44px; }
+  .btn.sec { flex:0 0 340px; background:rgba(244,246,251,.04); border:1px solid var(--border-strong); color:var(--text-strong); }
+  .btn.pri { flex:1; background:var(--accent-primary); border:0; color:var(--text-on-accent); box-shadow:var(--glow-rose); }
+  .btn.pri:active { background:var(--nx-rose-bright); }
+  .btn:disabled { opacity:.28; cursor:default; box-shadow:none; }
+
+  /* ---------- 等待中 ---------- */
+  .loading { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:radial-gradient(60% 40% at 50% 45%, rgba(14,20,48,.94) 0%, rgba(7,7,12,.97) 100%);
+    opacity:0; pointer-events:none; transition:opacity 350ms; }
+  .spin { width:200px; height:200px; border-radius:50%; border:2px solid var(--border-default); position:relative; }
+  .spin::after { content:""; position:absolute; inset:-2px; border-radius:50%; border:4px solid transparent; border-top-color:var(--accent-signal);
+    filter:drop-shadow(0 0 8px var(--nx-lime-glow)); animation:spin 1.1s linear infinite; }
+  .loading h2 { font-size:64px; font-weight:var(--fw-medium); margin:72px 0 0; letter-spacing:0.06em; }
+  .loading p { font-size:32px; color:var(--text-body); margin:20px 0 0; }
+  .bar { width:520px; height:3px; border-radius:2px; background:var(--border-default); margin-top:72px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0; background:var(--nx-iridescent); }
+  .code { font-family:var(--font-mono); font-size:18px; letter-spacing:var(--ls-hud); color:var(--text-muted); margin-top:30px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes fill { to { width:100%; } }
+
+  /* ---------- 模式 ---------- */
+  #screen[data-mode="preview"] .safe, #screen[data-mode="preview"] .empty { opacity:0; }
+  #screen[data-mode="preview"] .panel { opacity:.22; pointer-events:none; }
+  #screen[data-mode="preview"] .close { opacity:1; pointer-events:auto; }
+  #screen[data-mode="preview"] .rotate { opacity:1; }
+  #screen[data-mode="send"] .safe, #screen[data-mode="send"] .empty, #screen[data-mode="send"] .close, #screen[data-mode="send"] .seg,
+  #screen[data-mode="send"] .rotate, #screen[data-mode="send"] .panel, #screen[data-mode="send"] .actions,
+  #screen[data-mode="send"] .inst { opacity:0; pointer-events:none; }
+  #screen[data-mode="loading"] .loading { opacity:1; pointer-events:auto; }
+  #screen[data-mode="loading"] .bar i { animation:fill 2.4s linear forwards; }
+</style>
+</head>
+<body>
+
+<div id="screen" data-mode="draw">
+  <canvas id="stars" width="1080" height="1920"></canvas>
+  <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+
+  <div class="hud"><span>Future DNA // Signature</span><span class="net" id="net"><i></i><b id="netTxt" style="font-weight:400">Ready</b></span></div>
+  <h1 class="title">點亮未來的 <b>DNA</b></h1>
+  <div class="sub">Light up the DNA of the future</div>
+  <div class="inst" id="inst">選一個顏色，在球上簽下你的名字</div>
+
+  <div class="zone" id="zone">
+    <div class="floor" id="floor"></div>
+    <div class="trail" id="trail"><i></i><i></i><i></i></div>
+    <div class="fly" id="fly"><canvas id="gl" width="1600" height="1600"></canvas></div>
+    <svg class="safe" viewBox="0 0 1000 1000"><circle cx="500" cy="500" r="307.5" /></svg>
+    <div class="empty">在這裡簽名</div>
+    <div class="below warnmsg">請簽在虛線範圍內</div>
+    <div class="below rotate"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 8 4 4-4 4"/><path d="M2 12h20"/><path d="m6 8-4 4 4 4"/></svg>拖曳旋轉，看看你的簽名球</div>
+    <div class="hit" id="hit"></div>
+    <div class="seg" id="styles">
+      <button data-style="0"><b>刻印</b><small>ENGRAVED</small></button>
+      <button data-style="1"><b>能量</b><small>HOLLOW</small></button>
+    </div>
+    <button class="close" id="btnClose" aria-label="返回繪製"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>返回繪製</button>
+  </div>
+
+  <div class="panel">
+    <div class="lab">球的顏色<em>COLOR</em></div>
+    <div class="sw" id="swatches"></div>
+    <div class="row2">
+      <div>
+        <div class="lab">筆畫粗細<em>STROKE</em></div>
+        <div class="grp">
+          <button class="opt" data-size="0"><span class="dot" style="width:10px;height:10px"></span>細</button>
+          <button class="opt" data-size="1"><span class="dot" style="width:18px;height:18px"></span>中</button>
+          <button class="opt" data-size="2"><span class="dot" style="width:28px;height:28px"></span>粗</button>
+        </div>
+      </div>
+      <div>
+        <div class="lab">工具<em>TOOLS</em></div>
+        <div class="grp">
+          <button class="opt wide" data-tool="pen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>筆</button>
+          <button class="opt wide" data-tool="eraser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>橡皮擦</button>
+          <button class="opt wide" id="btnClear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>清除</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn sec" id="btnPreview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg><span>預覽</span></button>
+    <button class="btn pri" id="btnSend" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>送出</button>
+  </div>
+
+  <div class="loading">
+    <div class="spin"></div>
+    <h2>傳送中</h2>
+    <p>你的簽名正在飛向牆面，請稍候</p>
+    <div class="bar"><i></i></div>
+    <div class="code" id="code">SENDING</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var COLORS = [
+    { n:"紅", c:"#D6534E" }, { n:"橙", c:"#E2823A" }, { n:"金", c:"#CFA22A" }, { n:"綠", c:"#48A26A" },
+    { n:"青", c:"#2E9A99" }, { n:"藍", c:"#4A72C6" }, { n:"紫", c:"#8258C2" }, { n:"粉", c:"#CF568D" }
+  ];
+  var S = 1024;               // 筆跡貼圖邊長（送出時縮成 512）
+  var R = 0.82;               // 球半徑 / 球區半寬（球區 1000 → 球直徑 820）
+  var E = 1.6;                // 畫布邊長 / 球區邊長：多出來的空間給光暈、外環與 bloom
+  var SAFE = 0.75;            // 安全區域半徑 / 球半徑
+  var SIZES = [7, 13, 22];    // 筆寬（螢幕原生 px）
+  var K = (S / 2) / (500 * R); // 螢幕 px → 貼圖 px
+  // Bloom：threshold／scatter 對齊 Unity 的 BallWall（0.9 gamma、0.7）。這裡的球佔滿畫面，
+  // 擴散層數比 Unity 少、強度也降一點，光暈相對球的大小才會和牆面上看起來一樣
+  var BLOOM = { th:Math.pow(0.9, 2.2), intensity:0.6, scatter:0.05 + 0.9*0.7, levels:4 };
+
+  var screen = $("screen"), zone = $("zone"), hit = $("hit");
+  var cv = $("gl"), flyEl = $("fly"), floor = $("floor"), trail = $("trail");
+  var btnSend = $("btnSend"), btnPreview = $("btnPreview");
+  var scale = 1;
+
+  var sig = document.createElement("canvas"); sig.width = sig.height = S;
+  var sx = sig.getContext("2d");
+  var probe = document.createElement("canvas"); probe.width = probe.height = 64;
+  var px = probe.getContext("2d", { willReadFrequently:true });
+
+  var styleQ = /[?&]style=(\w+)/.exec(location.search);
+  var st = { mode:"draw", color:0, size:1, tool:"pen", inked:false, q:[0,0,0,1], busy:false,
+             style: styleQ && /^(1|hollow)$/i.test(styleQ[1]) ? 1 : 0, styleK:0 };
+  st.styleK = st.style;
+  var w = [0,0], anim = null, drag = null, stroke = null, idleT = 0, texDirty = true, lastId = "";
+
+  /* ---------- 星空背景（畫一次） ---------- */
+  (function(){ var c = $("stars").getContext("2d");
+    for (var i = 0; i < 260; i++) {
+      var x = Math.random()*1080, y = Math.random()*1920, r = Math.random() < 0.12 ? 1.6 + Math.random()*1.2 : 0.6 + Math.random()*0.8;
+      c.globalAlpha = 0.18 + Math.random()*0.55; c.fillStyle = Math.random() < 0.2 ? "#C9BFF0" : "#F4F6FB";
+      c.beginPath(); c.arc(x, y, r, 0, Math.PI*2); c.fill();
+    } })();
+
+  /* ---------- 四元數 ---------- */
+  function qMul(a,b){ return [
+    a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],
+    a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],
+    a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],
+    a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2] ]; }
+  function qAxis(x,y,z,ang){ var s = Math.sin(ang/2); return [x*s, y*s, z*s, Math.cos(ang/2)]; }
+  function qNorm(q){ var l = Math.hypot(q[0],q[1],q[2],q[3]) || 1; return [q[0]/l,q[1]/l,q[2]/l,q[3]/l]; }
+  function qSlerp(a,b,t){
+    var d = a[0]*b[0]+a[1]*b[1]+a[2]*b[2]+a[3]*b[3];
+    if (d < 0){ b = b.map(function(v){ return -v; }); d = -d; }
+    if (d > 0.9995) return qNorm(a.map(function(v,i){ return v + (b[i]-v)*t; }));
+    var th = Math.acos(d), s = Math.sin(th), wa = Math.sin((1-t)*th)/s, wb = Math.sin(t*th)/s;
+    return a.map(function(v,i){ return v*wa + b[i]*wb; });
+  }
+  function qMat(q){ var x=q[0], y=q[1], z=q[2], ww=q[3]; return new Float32Array([
+    1-2*(y*y+z*z), 2*(x*y+z*ww),   2*(x*z-y*ww),
+    2*(x*y-z*ww),  1-2*(x*x+z*z),  2*(y*z+x*ww),
+    2*(x*z+y*ww),  2*(y*z-x*ww),   1-2*(x*x+y*y) ]); }
+  function isFront(q){ return Math.abs(q[3]) > 0.9999; }
+
+  /* ---------- WebGL：球＋光暈（移植自 Unity 的 SignatureBall.shader / Halo.shader）→ HDR → bloom ---------- */
+  // 兩邊的 shader 要一起改：UnityMain/FutureDNA/Assets/FutureDNA/Resources/{SignatureBall,Halo}.shader
+  var gl = cv.getContext("webgl2", { premultipliedAlpha:true, antialias:false });
+  var P = {}, sigTex, hdr = false, RT = null;
+  var HEAD = "#version 300 es\nprecision highp float;\nin vec2 vP; out vec4 o;\n";
+  var ENC = "vec3 enc(vec3 c){ c = clamp(c, 0.0, 1.0); return mix(c*12.92, 1.055*pow(c, vec3(1.0/2.4))-0.055, step(0.0031308, c)); }\n";
+  var BALL_FS = [
+    "uniform sampler2D uSig; uniform vec3 uCol; uniform mat3 uRot;",
+    "uniform float uR, uPx, uT, uStyle, uGrid, uHalo, uEnc;",
+    "const float PI = 3.14159265;",
+    "const float INK_GLOW = 1.6, RIM_GLOW = 2.4, ENGRAVE = 1.8, INK_HALO = 1.6, RINGS = 1.2;",   // 與 Unity 材質預設值相同
+    "float hash21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }",
+    "float band(float x, float c, float w){ float fw = fwidth(x); return 1.0-smoothstep(w, w+1.5*fw, abs(x-c)); }",
+    "float gridLine(float v, float s){ float d = abs(fract(v/s+0.5)-0.5)*s; float fw = fwidth(v); return 1.0-smoothstep(0.6*fw, 1.8*fw, d); }",
+    // 貼圖是 1024²、Unity 收到的是 512²：mip 層級 +1 才會是同樣的模糊半徑
+    "float sigA(vec2 uv, float lod){ return textureLod(uSig, uv, lod+1.0).a; }",
+    "void main(){",
+    "  float t = uT;",
+    "  vec2 p = vP/uR; float d = length(p);",
+    "  float aa = 1.6*uPx/uR;",
+    "  float cov = 1.0-smoothstep(1.0-aa, 1.0, d);",
+    "  vec3 base = uCol;",
+    // Halo：quad 邊長 = 球直徑 × 2.6 → 球的邊緣在 r = 0.385
+    "  vec2 hd = p*0.385; float hr = length(hd), ha = atan(hd.y, hd.x);",
+    "  float glow = exp(-max(hr-0.385, 0.0)*9.0)*smoothstep(1.0, 0.8, hr);",
+    "  float rings = band(hr, 0.425, 0.004)*(0.6+0.4*sin(ha*3.0+t*0.7))",
+    "              + band(hr, 0.47, 0.003)*smoothstep(0.2, 0.6, sin(ha-t*0.4))*0.8",
+    "              + band(hr, 0.53, 0.002)*step(0.5, fract(ha/6.2831853*90.0-t*0.03))*0.5;",
+    "  vec3 halo = base*(glow*uHalo + rings*RINGS);",
+    "  halo *= 1.0-smoothstep(0.55, 1.0, length(vP));",   // 往畫布邊緣淡出：不留方框，也不把整個畫面染色
+    // 球面：n 是視圖法線，q 是球的本地座標（+z＝簽名的正面）
+    "  float dd = min(d, 0.999);",
+    "  vec3 n = vec3(p/max(d, 1e-5)*dd, sqrt(1.0-dd*dd));",
+    "  vec3 q = transpose(uRot)*n;",
+    "  vec3 L = normalize(vec3(-0.45, 0.6, 0.75)), H = normalize(L+vec3(0.0, 0.0, 1.0));",
+    "  float fres = 1.0-n.z;",
+    "  vec2 uv = vec2(q.x*0.5+0.5, 0.5-q.y*0.5);",
+    "  float front = smoothstep(0.0, 0.08, q.z);",
+    "  float ink = texture(uSig, uv).a*front;",
+    "  float glowA = (sigA(uv, 2.5)*0.55 + sigA(uv, 4.0)*0.35 + sigA(uv, 5.5)*0.25)*front;",
+    "  vec3 inkHalo = mix(vec3(1.0), base+0.35, 0.35)*glowA*INK_HALO*(1.0-ink);",
+    // 0 Engraved：筆跡 alpha 的梯度擾動法線 → 刻痕；貼圖 v 向下，所以 gy 反過來取
+    "  float e = 2.0/512.0;",
+    "  float gx = sigA(uv+vec2(e, 0.0), 1.0) - sigA(uv-vec2(e, 0.0), 1.0);",
+    "  float gy = sigA(uv-vec2(0.0, e), 1.0) - sigA(uv+vec2(0.0, e), 1.0);",
+    "  vec3 n2 = normalize(n + uRot*vec3(gx, gy, 0.0)*ENGRAVE*front);",
+    "  float blur = sigA(uv, 3.5)*front;",
+    "  float df2 = clamp(dot(n2, L), 0.0, 1.0);",
+    "  vec3 colE = base*(0.42+0.62*df2);",
+    "  colE *= 1.0-0.15*clamp(blur*1.6, 0.0, 1.0);",
+    "  colE += pow(clamp(dot(n2, H), 0.0, 1.0), 48.0)*0.35;",
+    "  float lon = atan(q.x, q.z), lat = asin(clamp(q.y, -1.0, 1.0));",   // 經緯線貼在球上（預覽旋轉時看得出在轉）
+    "  float grid = max(gridLine(lon, PI/8.0)*(1.0-smoothstep(0.88, 0.98, abs(q.y))), gridLine(lat, PI/8.0));",
+    "  colE += base*grid*0.45*(0.25+fres)*uGrid;",
+    "  float inkE = smoothstep(0.3, 0.9, ink);",
+    "  colE = mix(colE, vec3((0.72+0.35*df2)*INK_GLOW), inkE);",
+    "  colE += base*pow(fres, 2.5)*RIM_GLOW;",
+    "  colE += inkHalo;",
+    // 1 Hollow：中空能量球（環、弧、閃點固定在畫面上，不跟著旋轉）
+    "  float ang = atan(p.y, p.x);",
+    "  float rim = pow(fres, 1.6);",
+    "  float ring1 = band(d, 0.80, 0.010)*step(0.45, fract(ang/(2.0*PI)*60.0+t*0.04));",
+    "  float ring2 = band(d, 0.90, 0.005);",
+    "  float arc = band(d, 0.70, 0.012)*smoothstep(0.55, 0.62, sin(ang+t*0.8));",
+    "  float arc2 = band(d, 0.62, 0.006)*smoothstep(0.75, 0.8, sin(ang*2.0-t*0.5));",
+    "  vec2 c = p*26.0, f = fract(c)-0.5; float h = hash21(floor(c));",
+    "  float star = step(0.93, h)*(1.0-smoothstep(0.0, 0.14, length(f)))*(0.5+0.5*sin(t*(1.0+h*3.0)+h*30.0));",
+    "  vec3 colH = base*0.16 + base*rim*RIM_GLOW*1.4 + base*(ring1*1.4+ring2*2.0+arc*2.6+arc2*1.6)",
+    "            + (base+0.5)*star*0.9 + ink*INK_GLOW*1.2 + inkHalo;",
+    "  float aH = clamp(0.30+rim*0.5+ink+glowA*0.3, 0.0, 1.0);",
+    // 合成：光暈先畫，球以 premultiplied 疊上（和 Unity 的繪製順序相同）
+    "  vec3 col = mix(colE, colH, uStyle)*cov;",
+    "  float a = mix(1.0, aH, uStyle)*cov;",
+    "  col += halo*(1.0-a);",
+    "  if (uEnc > 0.5) { col = enc(col); a = max(a, max(col.r, max(col.g, col.b))); }",   // 沒有浮點緩衝時直接輸出
+    "  o = vec4(col, a);",
+    "}"
+  ].join("\n");
+  var PRE_FS = [   // 亮部篩選＋降半解析（URP 的 soft knee）
+    "uniform sampler2D uSrc; uniform vec2 uTx; uniform float uTh, uKnee;",
+    "void main(){ vec2 uv = vP*0.5+0.5;",
+    "  vec3 c = (texture(uSrc, uv+uTx*vec2(-1.0,-1.0)).rgb + texture(uSrc, uv+uTx*vec2(1.0,-1.0)).rgb",
+    "          + texture(uSrc, uv+uTx*vec2(-1.0, 1.0)).rgb + texture(uSrc, uv+uTx*vec2(1.0, 1.0)).rgb)*0.25;",
+    "  c = min(c, vec3(64.0));",
+    "  float br = max(c.r, max(c.g, c.b));",
+    "  float soft = clamp(br-uTh+uKnee, 0.0, 2.0*uKnee); soft = soft*soft/(4.0*uKnee+1e-4);",
+    "  o = vec4(c*max(br-uTh, soft)/max(br, 1e-4), 1.0); }"
+  ].join("\n");
+  var DOWN_FS = [
+    "uniform sampler2D uSrc; uniform vec2 uTx;",
+    "void main(){ vec2 uv = vP*0.5+0.5;",
+    "  vec3 s = texture(uSrc, uv).rgb*4.0 + texture(uSrc, uv-uTx).rgb + texture(uSrc, uv+uTx).rgb",
+    "         + texture(uSrc, uv+vec2(uTx.x, -uTx.y)).rgb + texture(uSrc, uv-vec2(uTx.x, -uTx.y)).rgb;",
+    "  o = vec4(s/8.0, 1.0); }"
+  ].join("\n");
+  var UP_FS = [
+    "uniform sampler2D uSrc, uHigh; uniform vec2 uTx; uniform float uScatter;",
+    "void main(){ vec2 uv = vP*0.5+0.5; vec2 h = uTx;",
+    "  vec3 s = texture(uSrc, uv+vec2(-2.0*h.x, 0.0)).rgb + texture(uSrc, uv+vec2(2.0*h.x, 0.0)).rgb",
+    "         + texture(uSrc, uv+vec2(0.0, -2.0*h.y)).rgb + texture(uSrc, uv+vec2(0.0, 2.0*h.y)).rgb",
+    "         + (texture(uSrc, uv+h).rgb + texture(uSrc, uv-h).rgb + texture(uSrc, uv+vec2(h.x, -h.y)).rgb + texture(uSrc, uv+vec2(-h.x, h.y)).rgb)*2.0;",
+    "  o = vec4(mix(texture(uHigh, uv).rgb, s/12.0, uScatter), 1.0); }"
+  ].join("\n");
+  var COMP_FS = [
+    "uniform sampler2D uScene, uBloom; uniform float uInt;",
+    "void main(){ vec2 uv = vP*0.5+0.5; vec4 s = texture(uScene, uv);",
+    "  vec3 c = enc(s.rgb + texture(uBloom, uv).rgb*uInt);",
+    "  o = vec4(c, max(s.a, max(c.r, max(c.g, c.b)))); }"   // 光暈當成黑底上的發光：alpha 至少等於亮度，維持合法的 premultiplied
+  ].join("\n");
+
+  if (gl) {
+    var compile = function(type, src){ var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s)); return s; };
+    var vs = compile(gl.VERTEX_SHADER, "#version 300 es\nin vec2 a; out vec2 vP; void main(){ vP=a; gl_Position=vec4(a,0.,1.); }");
+    var program = function(fs, names){ var p = gl.createProgram();
+      gl.attachShader(p, vs); gl.attachShader(p, compile(gl.FRAGMENT_SHADER, fs)); gl.bindAttribLocation(p, 0, "a"); gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) console.error(gl.getProgramInfoLog(p));
+      var u = {}; names.forEach(function(n){ u[n] = gl.getUniformLocation(p, n); }); return { p:p, u:u }; };
+    P.ball = program(HEAD + ENC + BALL_FS, ["uSig","uCol","uRot","uR","uPx","uT","uStyle","uGrid","uHalo","uEnc"]);
+    P.pre  = program(HEAD + PRE_FS, ["uSrc","uTx","uTh","uKnee"]);
+    P.down = program(HEAD + DOWN_FS, ["uSrc","uTx"]);
+    P.up   = program(HEAD + UP_FS, ["uSrc","uHigh","uTx","uScatter"]);
+    P.comp = program(HEAD + ENC + COMP_FS, ["uScene","uBloom","uInt"]);
+    gl.bindVertexArray(gl.createVertexArray());
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    sigTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, sigTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    hdr = !!gl.getExtension("EXT_color_buffer_float");
+  } else {
+    zone.insertAdjacentHTML("beforeend", '<div style="position:absolute;left:0;right:0;top:470px;text-align:center;font-size:32px;color:var(--text-muted)">此瀏覽器不支援 WebGL2</div>');
+  }
+
+  function target(wd, ht){
+    var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, wd, ht, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    var f = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, f);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) hdr = false;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { t:t, f:f, w:wd, h:ht };
+  }
+  function ensureTargets(){
+    if (RT && RT.size === cv.width) return;
+    if (RT) [RT.scene].concat(RT.down, RT.up).forEach(function(r){ gl.deleteTexture(r.t); gl.deleteFramebuffer(r.f); });
+    RT = { size:cv.width, scene:target(cv.width, cv.height), down:[], up:[] };
+    for (var i = 0, s = cv.width >> 1; i < BLOOM.levels; i++, s = Math.max(1, s >> 1)) RT.down.push(target(s, s));
+    for (i = 0; i < BLOOM.levels - 1; i++) RT.up.push(target(RT.down[i].w, RT.down[i].h));
+  }
+  function pass(p, dst, texs, set){
+    gl.useProgram(p.p);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, dst ? dst.f : null);
+    gl.viewport(0, 0, dst ? dst.w : cv.width, dst ? dst.h : cv.height);
+    texs.forEach(function(t, i){ gl.activeTexture(gl.TEXTURE0 + i); gl.bindTexture(gl.TEXTURE_2D, t); });
+    set(p.u); gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+  function lin(v){ return v <= 0.04045 ? v/12.92 : Math.pow((v + 0.055)/1.055, 2.4); }
+  function hexRgb(h){ var n = parseInt(h.slice(1), 16); return [(n>>16&255)/255, (n>>8&255)/255, (n&255)/255]; }
+  function upload(){ if (!gl) return;
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, sigTex); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sig); gl.generateMipmap(gl.TEXTURE_2D); }
+  function render(now){ if (!gl) return;
+    var bloom = hdr; if (bloom) { ensureTargets(); bloom = hdr; }
+    var c = hexRgb(COLORS[st.color].c).map(lin);
+    pass(P.ball, bloom ? RT.scene : null, [sigTex], function(u){
+      gl.uniform1i(u.uSig, 0); gl.uniform3f(u.uCol, c[0], c[1], c[2]); gl.uniformMatrix3fv(u.uRot, false, qMat(st.q));
+      gl.uniform1f(u.uR, R/E); gl.uniform1f(u.uPx, 2/cv.width); gl.uniform1f(u.uT, now/1000);
+      gl.uniform1f(u.uStyle, st.styleK); gl.uniform1f(u.uGrid, st.mode === "preview" ? 0.5 : 0);
+      gl.uniform1f(u.uHalo, 0.6 + 0.3*st.styleK); gl.uniform1f(u.uEnc, bloom ? 0 : 1);
+    });
+    if (!bloom) return;
+    var D = RT.down, U = RT.up, n = D.length, i, src;
+    pass(P.pre, D[0], [RT.scene.t], function(u){ gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uTx, 1/RT.scene.w, 1/RT.scene.h);
+      gl.uniform1f(u.uTh, BLOOM.th); gl.uniform1f(u.uKnee, BLOOM.th*0.5); });
+    for (i = 1; i < n; i++) { src = D[i-1];
+      pass(P.down, D[i], [src.t], function(u){ gl.uniform1i(u.uSrc, 0); gl.uniform2f(u.uTx, 1/src.w, 1/src.h); }); }
+    src = D[n-1];
+    for (i = n - 2; i >= 0; i--) {
+      pass(P.up, U[i], [src.t, D[i].t], function(u){ gl.uniform1i(u.uSrc, 0); gl.uniform1i(u.uHigh, 1);
+        gl.uniform2f(u.uTx, 1/src.w, 1/src.h); gl.uniform1f(u.uScatter, BLOOM.scatter); });
+      src = U[i];
+    }
+    pass(P.comp, null, [RT.scene.t, src.t], function(u){ gl.uniform1i(u.uScene, 0); gl.uniform1i(u.uBloom, 1); gl.uniform1f(u.uInt, BLOOM.intensity); });
+  }
+
+  /* ---------- 版面：1080×1920 等比縮放置中 ---------- */
+  function fit(){
+    var W = innerWidth, H = innerHeight;
+    scale = Math.min(W/1080, H/1920);
+    screen.style.transform = "translate(" + (W-1080*scale)/2 + "px," + (H-1920*scale)/2 + "px) scale(" + scale + ")";
+    var b = Math.max(480, Math.min(1600, Math.round(1600*scale*(devicePixelRatio||1))));
+    if (cv.width !== b) cv.width = cv.height = b;
+  }
+  addEventListener("resize", fit);
+
+  /* ---------- 狀態 ---------- */
+  var INST = { draw:"選一個顏色，在球上簽下你的名字", preview:"這就是你的簽名球", send:"送出！", loading:"" };
+  function setMode(m){
+    st.mode = m; screen.dataset.mode = m;
+    $("inst").textContent = INST[m];
+    btnPreview.disabled = m !== "draw";
+    btnPreview.querySelector("span").textContent = m === "preview" ? "預覽中" : "預覽";
+    btnSend.disabled = !st.inked || (m !== "draw" && m !== "preview");
+  }
+  function setColor(i){
+    st.color = i; screen.style.setProperty("--ball", COLORS[i].c);
+    [].forEach.call($("swatches").children, function(b, j){ b.classList.toggle("on", j === i); });
+  }
+  function setSize(i){ st.size = i; [].forEach.call(document.querySelectorAll("[data-size]"), function(b){ b.classList.toggle("on", +b.dataset.size === i); }); }
+  function setTool(t){ st.tool = t; [].forEach.call(document.querySelectorAll("[data-tool]"), function(b){ b.classList.toggle("on", b.dataset.tool === t); }); }
+  function setStyle(s){ st.style = s; [].forEach.call(document.querySelectorAll("[data-style]"), function(b){ b.classList.toggle("on", +b.dataset.style === s); }); }
+  function setInked(v){
+    st.inked = v; zone.classList.toggle("inked", v);
+    btnSend.disabled = !v || (st.mode !== "draw" && st.mode !== "preview");
+  }
+  function randomColor(){ var i; do { i = Math.floor(Math.random()*COLORS.length); } while (i === st.color && COLORS.length > 1); return i; }
+
+  COLORS.forEach(function(c, i){
+    var b = document.createElement("button"); b.style.setProperty("--c", c.c); b.setAttribute("aria-label", c.n);
+    b.addEventListener("click", function(){ if (st.mode === "draw") setColor(i); });
+    $("swatches").appendChild(b);
+  });
+  [].forEach.call(document.querySelectorAll("[data-size]"), function(b){ b.addEventListener("click", function(){ setSize(+b.dataset.size); }); });
+  [].forEach.call(document.querySelectorAll("[data-tool]"), function(b){ b.addEventListener("click", function(){ setTool(b.dataset.tool); }); });
+  [].forEach.call(document.querySelectorAll("[data-style]"), function(b){ b.addEventListener("click", function(){ if (!st.busy) setStyle(+b.dataset.style); }); });
+  $("btnClear").addEventListener("click", function(){ if (st.mode !== "draw") return; sx.clearRect(0,0,S,S); texDirty = true; setInked(false); });
+
+  /* ---------- 簽名：筆跡畫在 1024² 透明畫布，正投影貼到球的正面 ---------- */
+  function toBall(e){ var r = hit.getBoundingClientRect();
+    var nx = (e.clientX - r.left)/r.width*2 - 1, ny = 1 - (e.clientY - r.top)/r.height*2;
+    var bx = nx/R, by = ny/R;
+    return { x:(bx*0.5+0.5)*S, y:(0.5-by*0.5)*S, out: Math.hypot(bx, by) > SAFE }; }
+  function mid(a,b){ return { x:(a.x+b.x)/2, y:(a.y+b.y)/2 }; }
+  function ink(fn){
+    sx.save(); sx.beginPath(); sx.arc(S/2, S/2, SAFE*S/2, 0, Math.PI*2); sx.clip();   // 安全區域外一律不留筆跡
+    var er = st.tool === "eraser";
+    sx.globalCompositeOperation = er ? "destination-out" : "source-over";
+    sx.strokeStyle = sx.fillStyle = "#FFFFFF"; sx.lineCap = sx.lineJoin = "round";
+    sx.lineWidth = SIZES[st.size]*K*(er ? 2.4 : 1);
+    fn(); sx.restore(); texDirty = true;
+  }
+  var warnT = 0;
+  function warn(){ zone.classList.add("warn"); clearTimeout(warnT); warnT = setTimeout(function(){ zone.classList.remove("warn"); }, 1100); }
+  function addPoint(p){
+    var pts = stroke.pts; pts.push(p); var n = pts.length;
+    if (p.out) warn();
+    if (n === 2) ink(function(){ var m = mid(pts[0], pts[1]); sx.beginPath(); sx.moveTo(pts[0].x, pts[0].y); sx.lineTo(m.x, m.y); sx.stroke(); });
+    else if (n > 2) ink(function(){ var a = pts[n-3], b = pts[n-2], c = pts[n-1], m1 = mid(a,b), m2 = mid(b,c);
+      sx.beginPath(); sx.moveTo(m1.x, m1.y); sx.quadraticCurveTo(b.x, b.y, m2.x, m2.y); sx.stroke(); });
+  }
+  function checkInk(){ px.clearRect(0,0,64,64); px.drawImage(sig, 0, 0, 64, 64);
+    var d = px.getImageData(0,0,64,64).data; for (var i = 3; i < d.length; i += 4) if (d[i] > 8) return true; return false; }
+
+  hit.addEventListener("pointerdown", function(e){
+    if (st.busy) return;
+    hit.setPointerCapture(e.pointerId);
+    if (st.mode === "draw") {
+      var p = toBall(e); stroke = { id:e.pointerId, pts:[p] };
+      if (p.out) warn();
+      ink(function(){ sx.beginPath(); sx.arc(p.x, p.y, sx.lineWidth/2, 0, Math.PI*2); sx.fill(); });
+      if (st.tool === "pen" && !p.out) setInked(true);
+    } else if (st.mode === "preview") {
+      drag = { id:e.pointerId, x:e.clientX, y:e.clientY, t:performance.now() }; w = [0,0];
+    }
+  });
+  hit.addEventListener("pointermove", function(e){
+    if (stroke && e.pointerId === stroke.id) {
+      var evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e]; if (!evs.length) evs = [e];
+      evs.forEach(function(ev){ addPoint(toBall(ev)); });
+      if (st.tool === "pen" && !st.inked && !stroke.pts[stroke.pts.length-1].out) setInked(true);
+    } else if (drag && e.pointerId === drag.id) {
+      var now = performance.now(), dx = (e.clientX - drag.x)/scale, dy = (e.clientY - drag.y)/scale, dt = Math.max(16, now - drag.t);   // 以一幀為下限，避免高頻事件算出爆量慣性
+      var m = Math.hypot(dx, dy);
+      if (m > 0) {
+        var ang = m*0.0055, ax = dy/m, ay = dx/m;              // 往右拖＝繞 Y 軸正轉；往下拖＝繞 X 軸正轉
+        st.q = qNorm(qMul(qAxis(ax, ay, 0, ang), st.q));
+        w = [w[0]*0.4 + ax*ang/dt*0.6, w[1]*0.4 + ay*ang/dt*0.6];
+        var wm = Math.hypot(w[0], w[1]); if (wm > 0.012) { w[0] *= 0.012/wm; w[1] *= 0.012/wm; }
+      }
+      drag.x = e.clientX; drag.y = e.clientY; drag.t = now; idleT = now;
+    }
+  });
+  function endPointer(e){
+    if (stroke && e.pointerId === stroke.id) {
+      var pts = stroke.pts, n = pts.length;
+      if (n >= 2) ink(function(){ var m = mid(pts[n-2], pts[n-1]); sx.beginPath(); sx.moveTo(m.x, m.y); sx.lineTo(pts[n-1].x, pts[n-1].y); sx.stroke(); });
+      stroke = null; setInked(checkInk());
+    }
+    if (drag && e.pointerId === drag.id) { if (performance.now() - drag.t > 90) w = [0,0]; drag = null; idleT = performance.now(); }
+  }
+  hit.addEventListener("pointerup", endPointer);
+  hit.addEventListener("pointercancel", endPointer);
+  screen.addEventListener("contextmenu", function(e){ e.preventDefault(); });
+
+  /* ---------- 預覽 / 返回繪製 ---------- */
+  function turnFront(dur, cb){ w = [0,0]; if (isFront(st.q)) { st.q = [0,0,0,1]; cb && cb(); return; }
+    anim = { from:st.q.slice(), t0:performance.now(), dur:dur, cb:cb }; }
+  btnPreview.addEventListener("click", function(){ if (st.mode !== "draw" || st.busy) return; setMode("preview"); idleT = performance.now(); });
+  $("btnClose").addEventListener("click", function(){
+    if (st.mode !== "preview" || st.busy) return;
+    st.busy = true; turnFront(650, function(){ st.busy = false; setMode("draw"); });
+  });
+
+  /* ---------- 送出：轉回正面 → 往左飛出 → 等待中 → 回到簽名介面 ---------- */
+  btnSend.addEventListener("click", function(){
+    if (!st.inked || st.busy || (st.mode !== "draw" && st.mode !== "preview")) return;
+    st.busy = true; drag = null; setMode("send");
+    turnFront(420, fly);
+  });
+  // id 要跨重新整理也不重複（中繼端依 id 去重），所以帶時間＋亂數，不用流水號
+  function stamp(){ var d = new Date(), p = function(v, n){ return String(v).padStart(n || 2, "0"); };
+    return "b_" + d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) +
+      "_" + Math.random().toString(36).slice(2, 6); }
+  var flyAnim, floorAnim;
+  function fly(){
+    var ball = { type:"ball", id:stamp(), colorId:st.color + 1, color:COLORS[st.color].c, signature:exportPNG(), createdAt:new Date().toISOString() };
+    lastId = ball.id;
+    net.send(ball);
+    floorAnim = floor.animate([{ opacity:1 }, { opacity:0 }], { duration:600, delay:150, fill:"forwards" });
+    trail.animate([
+      { opacity:0, transform:"translateX(0) scaleX(.2)" },
+      { opacity:1, transform:"translateX(-80px) scaleX(1)", offset:.45 },
+      { opacity:0, transform:"translateX(-460px) scaleX(.6)" }
+    ], { duration:1000, delay:200, easing:"ease-out" });
+    flyAnim = flyEl.animate([
+      { transform:"translateX(0) scale(1)", easing:"cubic-bezier(.3,0,.4,1)" },
+      { transform:"translateX(36px) scale(.95)", offset:.18, easing:"cubic-bezier(.55,0,.85,.3)" },   // 先往右蓄力
+      { transform:"translateX(-1700px) scale(.42)" }
+    ], { duration:1150, fill:"forwards" });
+    flyAnim.onfinish = function(){
+      setMode("loading");
+      setTimeout(reset, 450);
+      setTimeout(comeBack, 2900);
+    };
+  }
+  function reset(){
+    sx.clearRect(0,0,S,S); texDirty = true;
+    st.q = [0,0,0,1]; w = [0,0];
+    setColor(randomColor()); setSize(1); setTool("pen"); setInked(false);
+    if (flyAnim) flyAnim.cancel(); if (floorAnim) floorAnim.cancel();
+    flyEl.style.opacity = 0; floor.style.opacity = 0;
+  }
+  function comeBack(){
+    setMode("draw"); st.busy = false;
+    flyEl.style.opacity = ""; floor.style.opacity = "";
+    flyEl.animate([
+      { transform:"scale(.5)", opacity:0 },
+      { transform:"scale(1.05)", opacity:1, offset:.65 },
+      { transform:"scale(1)", opacity:1 }
+    ], { duration:560, delay:250, easing:"ease-out", fill:"backwards" });
+    floor.animate([{ opacity:0 }, { opacity:1 }], { duration:500, delay:350, fill:"backwards" });
+  }
+
+  function exportPNG(){ var o = document.createElement("canvas"); o.width = o.height = 512; o.getContext("2d").drawImage(sig, 0, 0, 512, 512); return o.toDataURL("image/png"); }
+
+  /* ---------- 連線：?ws（同主機 /ws）或 ?ws=192.168.1.10:8080。沒帶參數就不連線 ---------- */
+  var net = (function(){
+    var m = /[?&]ws(?:=([^&]*))?(?:&|$)/.exec(location.search);
+    if (!m) return { send:function(){ $("code").textContent = "LOCAL"; } };
+    var url = m[1] ? "ws://" + decodeURIComponent(m[1]).replace(/^wss?:\/\//, "").replace(/\/ws$/, "") + "/ws"
+                   : (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/ws";
+    var KEY = "futuredna:outbox", sock = null, retry = 0;
+    var box = []; try { box = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}   // 未確認的球：斷線、重新整理都不會掉
+    function save(){ try { localStorage.setItem(KEY, JSON.stringify(box)); } catch (e) {} }
+    function status(){
+      var on = sock && sock.readyState === 1;
+      $("net").classList.toggle("on", on);
+      $("netTxt").textContent = on ? (box.length ? "Sending " + box.length : "Online") : (box.length ? "Offline · " + box.length + " queued" : "Offline");
+    }
+    function flush(){ if (sock && sock.readyState === 1) box.forEach(function(b){ sock.send(JSON.stringify(b)); }); }
+    function connect(){
+      try { sock = new WebSocket(url); } catch (e) { return later(); }
+      sock.onopen = function(){ retry = 0; sock.send(JSON.stringify({ type:"hello", role:"sign" })); flush(); status(); };
+      sock.onmessage = function(ev){
+        var msg; try { msg = JSON.parse(ev.data); } catch (e) { return; }
+        if (msg.type === "ack") {
+          box = box.filter(function(b){ return b.id !== msg.id; }); save(); status();
+          if (msg.id === lastId) $("code").textContent = "SENT · " + msg.id;
+        }
+      };
+      sock.onclose = function(){ status(); later(); };
+      sock.onerror = function(){};
+    }
+    function later(){ setTimeout(connect, Math.min(5000, 500 * Math.pow(2, retry++))); }
+    connect(); status();
+    return { send:function(b){
+      box.push(b); save(); status();
+      $("code").textContent = sock && sock.readyState === 1 ? "SENDING · " + b.id : "QUEUED · 連線後自動補送";
+      if (sock && sock.readyState === 1) sock.send(JSON.stringify(b));
+    } };
+  })();
+
+  window.FutureDNA = { exportPNG:exportPNG, state:st, setStyle:setStyle };
+
+  /* ---------- 迴圈（球有時間動畫，每幀都畫） ---------- */
+  var last = performance.now();
+  function tick(t){
+    var dt = Math.min(40, t - last); last = t;
+    st.styleK += (st.style - st.styleK)*Math.min(1, dt/110);   // 換樣式時淡入淡出
+    if (anim) {
+      var k = Math.min(1, (t - anim.t0)/anim.dur), e = 1 - Math.pow(1-k, 3);
+      st.q = qSlerp(anim.from, [0,0,0,1], e);
+      if (k >= 1) { st.q = [0,0,0,1]; var cb = anim.cb; anim = null; cb && cb(); }
+    } else if (st.mode === "preview" && !drag) {
+      var m = Math.hypot(w[0], w[1]);
+      if (m > 2e-5) {                                           // 放手後的慣性
+        st.q = qNorm(qMul(qAxis(w[0]/m, w[1]/m, 0, m*dt), st.q));
+        var f = Math.pow(0.993, dt); w[0] *= f; w[1] *= f; idleT = t;
+      } else if (t - idleT > 1600) {                            // 閒置時緩慢自轉，提示可以轉
+        st.q = qNorm(qMul(qAxis(0, 1, 0, 0.00035*dt), st.q));
+      }
+    }
+    if (texDirty) { upload(); texDirty = false; }
+    render(t);
+    requestAnimationFrame(tick);
+  }
+
+  fit();
+  setColor(randomColor()); setSize(1); setTool("pen"); setStyle(st.style); setInked(false); setMode("draw");
+  requestAnimationFrame(tick);
+  addEventListener("keydown", function(e){
+    if (e.key === "f" || e.key === "F") { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
+    if (e.key === "1") setStyle(0);
+    if (e.key === "2") setStyle(1);
+  });
+})();
+</script>
+</body>
+</html>
